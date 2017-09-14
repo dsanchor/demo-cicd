@@ -32,7 +32,7 @@ def applyTemplate(project, templateFile, appName, appVersion, customParameters, 
          }
          if (!skip) {
             // TODO consider not to override replica numbers in DC or any other parameter.. so it should be managed each type individually and save previous state when needed
-            filterObject(o)
+            //filterObject(o)
             echo "Applying changes on ${o.kind}"
             def created = openshift.apply(o) 
            // do we want to show "created"?
