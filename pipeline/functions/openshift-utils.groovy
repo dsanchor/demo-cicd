@@ -11,3 +11,5 @@ def createProject(project, jenkinsProject) {
       //openshift.policy("add-role-to-user", "edit", "system:serviceaccount:${jenkinsProject}:jenkins", "-n", project)
    }
 }
+
+def test(){ echo "It is loaded.."}
