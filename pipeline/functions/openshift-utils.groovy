@@ -26,6 +26,30 @@ def applyTemplate(project, templateFile, appName, appVersion, customParameters) 
    }
 }
 
+def applyTemplate(project, templateFile, appName, appVersion, customParameters, String[] skipObjects) {
+   echo "Applying template ${templateFile} in project ${project}. Application: ${appName}-${appVersion}"
+   openshift.withProject( project ) {
+      echo "Additional parameters for template are ${customParameters}"
+      def models = openshift.process( readFile(file:"${WORKSPACE}/app/${APP_TEMPLATE}"), "-p", "NAME=${APP_NAME}", "-p", "APP_VERSION=${TEST_TAG}", "${CUSTOM_PARAMETERS}" )
+      for ( o in models ) {
+         // we will discard skipObjects
+         def skip = false
+         for ( skipObject in skipObjects ) {
+           if (o.kind != skipObject) {
+	      skip = true
+	      break
+           }
+         }
+         if (!skip) {
+            // TODO consider not to override replica numbers in DC or any other parameter.. so it should be managed each type individually and save previous state when needed
+            echo "Applying changes on ${o.kind}"
+            def created = openshift.apply(o) 
+           // do we want to show "created"?
+         }
+      }
+   }
+}
+
 def startBuildFromFile(project, appName, file, watchUntilCompletion) {
    echo "Starting binary build in project ${project} for application ${appName}"
    openshift.withProject( project ) {
