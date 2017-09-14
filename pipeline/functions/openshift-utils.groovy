@@ -98,7 +98,8 @@ def filterDeploymentConfig(dc) {
    def currentDc = openshift.selector("dc", dc.metadata.name)
    if (currentDc.exists()) {
       // save current replica number
-      dc.object().spec.replicas = currentDc.object().spec.replicas
+      echo "${currentDc.object().spec.replicas}"
+      echo "${dc.object().spec.replicas}" 
    }
 }
 
