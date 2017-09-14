@@ -15,11 +15,11 @@ def createProject(project, jenkinsProject) {
 }
 
 
-def applyTemplate(project, templateFile, appName, appVersion, customParameters, skipObjects) {
+def applyTemplate(project, templateFile, appName, appVersion, imageStreamName, customParameters, skipObjects) {
    echo "Applying template ${templateFile} in project ${project}. Application: ${appName}-${appVersion}"
    openshift.withProject( project ) {
       echo "Additional parameters for template are ${customParameters}"
-      def models = openshift.process( readFile(file:templateFile), "-p NAME=${appName}", "-p APP_VERSION=${appVersion}", customParameters )
+      def models = openshift.process( readFile(file:templateFile), "-p NAME=${appName}", "-p APP_VERSION=${appVersion}", "-p IMAGESTREAM_NAME=${imageStreamName}", customParameters )
       echo "Discarding objects of type ${skipObjects}"
       for ( o in models ) {
          // we will discard skipObjects
