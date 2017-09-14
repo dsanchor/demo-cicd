@@ -26,7 +26,7 @@ def applyTemplate(project, templateFile, appName, appVersion, customParameters) 
    }
 }
 
-def applyTemplate(project, templateFile, appName, appVersion, customParameters, String[] skipObjects) {
+def applyTemplate(project, templateFile, appName, appVersion, customParameters, skipObjects) {
    echo "Applying template ${templateFile} in project ${project}. Application: ${appName}-${appVersion}"
    openshift.withProject( project ) {
       echo "Additional parameters for template are ${customParameters}"
