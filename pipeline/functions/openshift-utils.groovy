@@ -13,3 +13,5 @@ def createProject(project, jenkinsProject) {
 }
 
 def test(){ echo "It is loaded.."}
+
+return this
