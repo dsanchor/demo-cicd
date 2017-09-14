@@ -98,7 +98,7 @@ def filterObject(object) {
 
 
 def filterDeploymentConfig(dc) {
-   echo "Filtering DeploymentConfig ${dc.metada.name}"
+   echo "Filtering DeploymentConfig ${dc.metadata.name}"
    def currentDc = openshift.selector("dc", dc.metadata.name)
    if (currentDc.exists()) {
       // save current replica number
