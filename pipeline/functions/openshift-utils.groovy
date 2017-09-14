@@ -7,8 +7,8 @@ def createProject(project, jenkinsProject) {
       openshift.newProject( project, "--display-name", project)
       echo "Project ${project} has been created"
    } catch ( e ) {
-      echo "Check error.. but it could be that the project already exists... skkiping step"
       echo "${e}"
+      echo "Check error.. but it could be that the project already exists... skkiping step"
       // TODO To be decided.. => if the project was not created by jenkins sa, then, it is vey likely that its sa doesnt have admin or edit role. If it was created by jenkins, jenkins sa will have admin role
       //openshift.policy("add-role-to-user", "edit", "system:serviceaccount:${jenkinsProject}:jenkins", "-n", project)
    }
@@ -32,7 +32,7 @@ def applyTemplate(project, templateFile, appName, appVersion, customParameters, 
          }
          if (!skip) {
             // TODO consider not to override replica numbers in DC or any other parameter.. so it should be managed each type individually and save previous state when needed
-            //filterObject(o)
+            filterObject(o)
             echo "Applying changes on ${o.kind}"
             def created = openshift.apply(o) 
            // do we want to show "created"?
@@ -98,8 +98,8 @@ def filterDeploymentConfig(dc) {
    def currentDc = openshift.selector("dc", dc.metadata.name)
    if (currentDc.exists()) {
       // save current replica number
-      echo "${currentDc.object().spec.replicas}"
-      echo "${dc.spec.replicas}" 
+      echo "Keeping replica number to ${currentDc.object().spec.replicas}"
+      dc.spec.replicas = currentDc.object().spec.replicas
    }
 }
 
