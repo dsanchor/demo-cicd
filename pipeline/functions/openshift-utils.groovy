@@ -13,9 +13,9 @@ def createProject(project, jenkinsProject) {
 }
 
 
-def applyTemplate(project, templateFile, String... params) {
+def applyTemplate(project, templateFile, appName, appVersion, customParameters) {
    openshift.withProject( project ) {
-      def models = openshift.process( readFile(file:templateFile), params )
+      def models = openshift.process( readFile(file:templateFile), "-p NAME=${appName}", "-p APP_VERSION=${appVersion}", "${customParameters}" )
       echo "This template has ${models.size()} objects"
       def created = openshift.apply( models )
      // do we want to show "created"?
