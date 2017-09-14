@@ -42,4 +42,34 @@ def startBuildFromFile(project, appName, file, watchUntilCompletion) {
    }
 } 
 
+def deploy(project, appName) {
+   echo "Deploying application ${appName} in project ${project}"
+   openshift.withProject( project ) {
+      def dc = openshift.selector("dc", appName)
+
+      def replicas = dc.object().spec.replicas
+      def currentPods = dc.related('pods').count()
+ 
+      def rm = dc.rollout() 
+      def lastDeploy = rm.latest()
+      echo "${lastDeploy.out}"
+            
+      dc.related( 'pods' ).watch {
+         // End the watch only when rolling new pods
+	 return it.count() > currentPods 
+      }
+      echo "Rolling out deployment"
+      dc.related( 'pods' ).watch {
+         // End the watch only once the exact number of replicas is back
+         return it.count() == replicas 
+      }
+      // Let's wait until pods are Running
+      dc.related( 'pods' ).untilEach {
+         echo "Pod ${it.object().metadata.name}"
+         return it.object().status.phase == 'Running'
+      }
+      echo "New deployment ready"
+   }
+}
+
 return this
