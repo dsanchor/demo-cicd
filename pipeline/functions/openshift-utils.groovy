@@ -15,25 +15,14 @@ def createProject(project, jenkinsProject) {
 }
 
 
-def applyTemplate(project, templateFile, appName, appVersion, customParameters) {
-   echo "Applying template ${templateFile} in project ${project}. Application: ${appName}-${appVersion}"
-   openshift.withProject( project ) {
-      echo "Additional parameters for template are ${customParameters}"
-      def models = openshift.process( readFile(file:templateFile), "-p NAME=${appName}", "-p APP_VERSION=${appVersion}", customParameters )
-      echo "This template has ${models.size()} objects"
-      def created = openshift.apply( models )
-     // do we want to show "created"?
-   }
-}
-
 def applyTemplate(project, templateFile, appName, appVersion, customParameters, skipObjects) {
    echo "Applying template ${templateFile} in project ${project}. Application: ${appName}-${appVersion}"
    openshift.withProject( project ) {
       echo "Additional parameters for template are ${customParameters}"
       def models = openshift.process( readFile(file:templateFile), "-p NAME=${appName}", "-p APP_VERSION=${appVersion}", customParameters )
+      echo "Discarding objects of type ${skipObjects}"
       for ( o in models ) {
          // we will discard skipObjects
-         echo "Discarding objects of type ${skipObjects}"
          def skip = false
          for ( skipObject in skipObjects ) {
            if (o.kind == skipObject) {
@@ -43,6 +32,7 @@ def applyTemplate(project, templateFile, appName, appVersion, customParameters, 
          }
          if (!skip) {
             // TODO consider not to override replica numbers in DC or any other parameter.. so it should be managed each type individually and save previous state when needed
+            filterObject(o)
             echo "Applying changes on ${o.kind}"
             def created = openshift.apply(o) 
            // do we want to show "created"?
@@ -96,5 +86,21 @@ def deploy(project, appName) {
       echo "New deployment ready"
    }
 }
+
+def filterObject(object) {
+   // TODO extend with any possible rule 
+   if ( object.kind == "DeploymentConfig" ) {
+      filterDeploymentConfig(object)
+   }
+}
+
+def filterDeploymentConfig(dc) {
+   def currentDc = openshift.selector("dc", object.metadata.name)
+   if (currentDc.exists()) {
+      // save current replica number
+      dc.object().spec.replicas = currentDc.object().spec.replicas
+   }
+}
+
 
 return this
