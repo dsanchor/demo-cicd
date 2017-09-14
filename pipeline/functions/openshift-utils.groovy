@@ -33,9 +33,10 @@ def applyTemplate(project, templateFile, appName, appVersion, customParameters, 
       def models = openshift.process( readFile(file:templateFile), "-p NAME=${appName}", "-p APP_VERSION=${appVersion}", customParameters )
       for ( o in models ) {
          // we will discard skipObjects
+         echo "Discarding objects of type ${skipObjects}"
          def skip = false
          for ( skipObject in skipObjects ) {
-           if (o.kind != skipObject) {
+           if (o.kind == skipObject) {
 	      skip = true
 	      break
            }
