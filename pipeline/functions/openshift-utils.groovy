@@ -30,7 +30,7 @@ def applyTemplate(project, templateFile, appName, appVersion, customParameters, 
    echo "Applying template ${templateFile} in project ${project}. Application: ${appName}-${appVersion}"
    openshift.withProject( project ) {
       echo "Additional parameters for template are ${customParameters}"
-      def models = openshift.process( readFile(file:"${WORKSPACE}/app/${APP_TEMPLATE}"), "-p", "NAME=${APP_NAME}", "-p", "APP_VERSION=${TEST_TAG}", "${CUSTOM_PARAMETERS}" )
+      def models = openshift.process( readFile(file:templateFile), "-p NAME=${appName}", "-p APP_VERSION=${appVersion}", customParameters )
       for ( o in models ) {
          // we will discard skipObjects
          def skip = false
