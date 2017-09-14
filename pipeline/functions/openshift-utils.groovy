@@ -99,7 +99,7 @@ def filterDeploymentConfig(dc) {
    if (currentDc.exists()) {
       // save current replica number
       echo "${currentDc.object().spec.replicas}"
-      echo "${dc.object().spec.replicas}" 
+      echo "${dc.spec.replicas}" 
    }
 }
 
