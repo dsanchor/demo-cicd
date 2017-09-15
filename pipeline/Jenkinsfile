@@ -1,115 +1,67 @@
 node ("maven") {
 
-   // just for testing. Now are variables. Once 3.6 is ready they should be BC envs variables converted to Pipeline params
-   def GIT_URL = "https://github.com/dsanchor/demo-rest.git"
-   def DEV_PROJECT_NAME = "development"
-   def APP_TEMPLATE = "openshift/template/demo-rest-template.yml"
-   def APP_NAME = "demo-rest"
    // FIXME this one will be extracted from pom.xml
    def APP_VERSION = "1.0.1"
-   def REGISTRY = "172.30.1.1:5000"
-   def IMAGESTREAM_PROJECT = "development"
    // FIXME this one should be obtained as an addition of NEXUS_URL plus all the information declared in pom.xml for the application (groupId, artifactId, version)
    def NEXUS_URL="http://nexus-devops.192.168.99.100.nip.io/nexus/content/repositories/releases/com/redhat/consulting/spring/demo-rest/0.0.1/demo-rest-0.0.1.jar"
-   def TEST_PROJECT_NAME = "test"
-   def TEST_TAG = "test"
-   def JENKINS_NAMESPACE = "devops"
-   
-   // FIXME get settings from common git	
-   // define maven with custom settings.xml
-   def mvnCmd = "mvn -s openshift/maven/settings.xml"
+   	
+   // download and configure all common cicd stuff
+   dir('cicd') {
+      // download all cicd required files
+      git "${params.CICD_GIT_URL}"
+      // load openshift-utils functions (using this path as convention.. define a env var if desired...)
+      openshiftUtils = load 'pipeline/functions/openshift-utils.groovy'
+
+   }  
+   // define maven with custom settings.xml (using this path as convention.. define a env var if desired...)
+   def mvnCmd = "mvn -s ${WORKSPACE}/cicd/maven/settings.xml" 
 
    stage("Maven build") {
-      // Get source code from repository
-      git "${GIT_URL}"
-      // set up settings with custom nexus repos
-      sh "${mvnCmd} clean package -DskipTests"
+
+      dir('app') {
+         // Get source code from repository
+         git "${params.APP_GIT_URL}" 
+         sh "${mvnCmd} clean package -DskipTests"
+      }  
    }
+
    stage("Unit Testing & Analysis") {
-       
-      echo "TOOD => Perform some unit testing here!!!!"
-      echo "TOOD => You may perform some quality test as well.. integrate with sonarq"
-        
+
+      dir('app') {
+         echo "TOOD => Perform some unit testing here!!!!"
+         echo "TOOD => You may perform some static analysis as well.. integrate with sonarq"
+      }        
    }
 
    stage("Push artifact to Nexus") {
        
       echo "TOOD => Release process, that it should create a branch/tag on git, modify pom versions and upload the artifact to Nexus"
-      // this commented command will to the nexus part (if you just want that.. it works, but just once per version
+      // this commented command will to the nexus part (if you just want that.. it works, but just once per version (or push it manually..)
       //sh "${mvnCmd} deploy -DskipTests"
         
    }
 
 
-   stage("Build image in Openshift") {
+   stage("Build in Openshift") {
       
       // no need to define a cluster if we have just one defined and it is the one where Jenkins is running 
       openshift.withCluster() { 
 
-         try {
-            // try to create the project
-            openshift.newProject( DEV_PROJECT_NAME, "--display-name", DEV_PROJECT_NAME)
-         } catch ( e ) {
-            echo "${e}"
-            // TODO if the project was not created by jenkins sa, then, it is vey likely that its sa doesnt have admin or edit role. If it was created by jenkins, jenkins sa will have admin role
-            //openshift.policy("add-role-to-user", "edit", "system:serviceaccount:${JENKINS_NAMESPACE}:jenkins", "-n", DEV_PROJECT_NAME)
-         }
-
-         openshift.withProject( DEV_PROJECT_NAME ) {
-
-            def models = openshift.process( readFile(file:"${APP_TEMPLATE}"), "-p", "NAME=${APP_NAME}", "-p", "APP_VERSION=${APP_VERSION}", "-p", "REGISTRY=${REGISTRY}", "-p", "IMAGESTREAM_PROJECT=${IMAGESTREAM_PROJECT}" )
-    
-            echo "This template has ${models.size()} objects"
-            def created = openshift.apply( models )
-
-            // start build
-    	    def build = openshift.startBuild(APP_NAME,"--from-file=${NEXUS_URL}")
-            build.describe()
-            
-            build.watch {
-                return it.object().status.phase == "Complete"
-            }            
-    	 }
+         openshiftUtils.createProject(params.DEV_PROJECT, params.JENKINS_PROJECT)
+         openshiftUtils.applyTemplate(params.DEV_PROJECT, "${WORKSPACE}/app/${params.APP_TEMPLATE}", params.APP_NAME,  APP_VERSION, params.APP_NAME, "${params.CUSTOM_TEMPLATE_PARAMETERS}" , [])
+         openshiftUtils.startBuildFromFile(params.DEV_PROJECT, params.APP_NAME, NEXUS_URL, true) 
       }
    }
 
-   stage("Deploy in *${DEV_PROJECT_NAME}*") {
+   stage("Deploy in *${params.DEV_PROJECT}*") {
       
       openshift.withCluster() { 
 
-         openshift.withProject( DEV_PROJECT_NAME ) {
-	
-            // rollout new version
-            def dc = openshift.selector("dc", APP_NAME)
-            def replicas = dc.object().spec.replicas
-            def currentPods = dc.related('pods').count()
- 
-            def rm = dc.rollout() 
-            def lastDeploy = rm.latest()
-
-            echo "${lastDeploy.out}"
-            
-            dc.related( 'pods' ).watch {
-		// End the watch only when rolling new pods
-		return it.count() > currentPods 
-            }
-            echo "Rolling out deployment"
-            dc.related( 'pods' ).watch {
-               // End the watch only once the exact number of replicas is back
-               return it.count() == replicas 
-            }
-            // Let's wait until pods are Running
-            dc.related( 'pods' ).untilEach {
-               echo "Pod ${it.object().metadata.name}"
-               return it.object().status.phase == 'Running'
-            }
-            echo "New deployment ready"
-
-    	 }
+         openshiftUtils.deploy(params.DEV_PROJECT, params.APP_NAME)
       }
    }
 
-   stage("Integration tests in *${DEV_PROJECT_NAME}*") {
+   stage("Integration tests in *${params.DEV_PROJECT}*") {
        
       echo "TOOD => Define integration tests"
         
@@ -117,73 +69,83 @@ node ("maven") {
 
    stage('Approval required') {
       // TODO send notification
-      input "Ready to update ${TEST_PROJECT_NAME} project with application ${APP_NAME} version ${APP_VERSION}?"
+      input "Ready to update ${params.TEST_PROJECT} project with application ${params.APP_NAME} version ${APP_VERSION}?"
    }
 
-   stage("Deploy in *${TEST_PROJECT_NAME}*") {
+   stage("Deploy in *${params.TEST_PROJECT}*") {
       
       openshift.withCluster() { 
 
-         openshift.withProject( DEV_PROJECT_NAME ) {
-
-            // tag image
-            openshift.tag("${DEV_PROJECT_NAME}/${APP_NAME}:${APP_VERSION}", "${DEV_PROJECT_NAME}/${APP_NAME}:${TEST_TAG}")
-
-            try {
-               // try to create the project
-               openshift.newProject( TEST_PROJECT_NAME, "--display-name", TEST_PROJECT_NAME)
-            } catch ( e ) {
-            echo "${e}"
-              // TODO if the project was not created by jenkins sa, then, it is vey likely that its sa doesnt have admin or edit role. If it was created by jenkins, jenkins sa will have admin role
-              //openshift.policy("add-role-to-user", "edit", "system:serviceaccount:${JENKINS_NAMESPACE}:jenkins", "-n", TEST_PROJECT_NAME)
-            }
-
-            openshift.withProject( TEST_PROJECT_NAME ) {
-               def models = openshift.process( readFile(file:"${APP_TEMPLATE}"), "-p", "NAME=${APP_NAME}", "-p", "APP_VERSION=${TEST_TAG}", "-p", "REGISTRY=${REGISTRY}", "-p", "IMAGESTREAM_PROJECT=${IMAGESTREAM_PROJECT}" )
-               for ( o in models ) {
-                  // we will discard ImageStream and BuildConfig
-                  if (o.kind!="ImageStream" && o.kind!="BuildConfig") {
-                     // TODO consider not to override replica numbers in DC or any other parameter.. so it should be managed each type individually and save previous state when needed
-                     echo "Applying changes on ${o.kind}"
-                     openshift.apply(o) 
-                  }
-               }
-
-               // rollout new version
-               def dc = openshift.selector("dc", APP_NAME)
-               def replicas = dc.object().spec.replicas
-               def currentPods = dc.related('pods').count()
- 
-               def rm = dc.rollout() 
-               def lastDeploy = rm.latest()
-
-               echo "${lastDeploy.out}"
-            
-               dc.related( 'pods' ).watch {
-		   // End the watch only when rolling new pods
-		   return it.count() > currentPods 
-               }
-               echo "Rolling out deployment"
-               dc.related( 'pods' ).watch {
-                  // End the watch only once the exact number of replicas is back
-                  return it.count() == replicas 
-               }
-               // Let's wait until pods are Running
-               dc.related( 'pods' ).untilEach {
-                  echo "Pod ${it.object().metadata.name}"
-                  return it.object().status.phase == 'Running'
-               }
-               echo "New deployment ready"
-            }
-
-    	 }
+         openshiftUtils.createProject(params.TEST_PROJECT, params.JENKINS_PROJECT)
+         // tag image
+         openshift.tag("${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${APP_VERSION}", "${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${params.TEST_TAG}")
+         openshiftUtils.applyTemplate(params.TEST_PROJECT, "${WORKSPACE}/app/${params.APP_TEMPLATE}", params.APP_NAME,  params.TEST_TAG, params.APP_NAME, "${params.CUSTOM_TEMPLATE_PARAMETERS}", ["BuildConfig", "ImageStream"] )
+         openshiftUtils.deploy(params.TEST_PROJECT, params.APP_NAME)
       }
    }
 
-   stage("Integration tests in *${TEST_PROJECT_NAME}*") {
+   stage("Integration tests in *${params.TEST_PROJECT}*") {
        
       echo "TOOD => Define integration tests"
         
+   }
+
+   stage('Approval required') {
+      // TODO send notification
+      input "A/B deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME} version ${APP_VERSION}?"
+   }
+
+   stage("Deploy A/B in *${params.PROD_PROJECT}*") {
+      
+      openshift.withCluster() { 
+
+         openshiftUtils.createProject(params.PROD_PROJECT, params.JENKINS_PROJECT)
+         // tag image
+         openshift.tag("${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${params.TEST_TAG}", "${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${params.PROD_TAG}")
+         openshift.withProject(params.PROD_PROJECT) {
+            redeploy = openshift.selector("dc", params.APP_NAME).exists()
+         }
+         if (redeploy) {
+            echo "Executing A/B deployment"
+            // create alternate deployment with new version
+            openshiftUtils.applyTemplate(params.PROD_PROJECT, "${WORKSPACE}/app/${params.APP_TEMPLATE}", "${params.APP_NAME}-alternate",  params.PROD_TAG, params.APP_NAME, "${params.CUSTOM_TEMPLATE_PARAMETERS}", ["BuildConfig", "ImageStream", "Route"] )
+            openshiftUtils.deploy(params.PROD_PROJECT, "${params.APP_NAME}-alternate")
+            // configure A/B routing
+            sh "oc project ${params.PROD_PROJECT}"
+            sh "oc patch route/${params.APP_NAME} -p '{\"spec\": { \"alternateBackends\": [ { \"kind\": \"Service\", \"name\": \"${params.APP_NAME}-alternate\", \"weight\": 20 } ] } }'"
+         } else {
+            echo "First time deployment"
+            // first time deployment
+            openshiftUtils.applyTemplate(params.PROD_PROJECT, "${WORKSPACE}/app/${params.APP_TEMPLATE}", params.APP_NAME,  params.PROD_TAG, params.APP_NAME, "${params.CUSTOM_TEMPLATE_PARAMETERS}", ["BuildConfig", "ImageStream"] )
+            openshiftUtils.deploy(params.PROD_PROJECT, params.APP_NAME)
+         }
+      }
+   }
+
+   stage("Integration tests in *${params.PROD_PROJECT}*") {
+       
+      echo "TOOD => Define integration tests if needed.. "
+        
+   }
+
+   stage('Approval required') {
+      // TODO send notification
+      input "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME} version ${APP_VERSION}? "
+   }
+
+   stage("Full deploy in *${params.PROD_PROJECT}*") {
+      
+      openshift.withCluster() { 
+
+         echo "Executing full deployment"
+         openshiftUtils.applyTemplate(params.PROD_PROJECT, "${WORKSPACE}/app/${params.APP_TEMPLATE}", "${params.APP_NAME}",  params.PROD_TAG, params.APP_NAME, "${params.CUSTOM_TEMPLATE_PARAMETERS}", ["BuildConfig", "ImageStream"] )
+         openshiftUtils.deploy(params.PROD_PROJECT, "${params.APP_NAME}")
+         // if needed
+         sh "oc project ${params.PROD_PROJECT}"
+         sh "oc patch route/${params.APP_NAME} -p '{\"spec\": { \"alternateBackends\": [ ] } }'"
+         openshift.selector( "dc",  "${params.APP_NAME}-alternate" ).delete()
+         openshift.selector( "svc",  "${params.APP_NAME}-alternate" ).delete()
+      }
    }
 
 
