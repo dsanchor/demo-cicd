@@ -72,16 +72,18 @@ def deploy(project, appName) {
             
       dc.related( 'pods' ).watch {
          // End the watch only when rolling new pods
+         echo "Pods being rolling are ${it.count()} while old ones were ${currentPods}"
 	 return it.count() > currentPods 
       }
       echo "Rolling out deployment"
       dc.related( 'pods' ).watch {
          // End the watch only once the exact number of replicas is back
+         echo "New pods are ${it.count()} and should match ${replicas}"
          return it.count() == replicas 
       }
       // Let's wait until pods are Running
       dc.related( 'pods' ).untilEach {
-         echo "Pod ${it.object().metadata.name}"
+         echo "Pod ${it.object().metadata.name} is ${it.object().status.phase}"
          return it.object().status.phase == 'Running'
       }
       echo "New deployment ready"
