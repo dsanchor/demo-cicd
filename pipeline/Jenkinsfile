@@ -1,8 +1,5 @@
 node ("maven") {
 
-   // FIXME this one should be obtained as an addition of NEXUS_URL plus all the information declared in pom.xml for the application (groupId, artifactId, version)
-   def NEXUS_URL="http://nexus-devops.192.168.99.100.nip.io/nexus/content/repositories/releases/com/redhat/consulting/spring/demo-rest/0.0.1/demo-rest-0.0.1.jar"
-   	
    // download and configure all common cicd stuff
    dir('cicd') {
       // download all cicd required files
@@ -37,11 +34,15 @@ node ("maven") {
        
       echo "TOOD => Release process, that it should create a branch/tag on git, modify pom versions and upload the artifact to Nexus"
       // FIXME I have manually pushed the artifact 0.0.1 in Nexus (mvn deploy) and the source code in master is 0.0.1. Once release process is designed there would not be any manual step
-      // extract information from pom.xml once pushed in git
+      // extract information from pom.xml once pushed into git
       dir('app') {
          // extract info from pom.xml
          def pom = readMavenPom file: "pom.xml"
          APP_VERSION = pom.version
+         def artifactId = pom.artifactId
+         def groupId = pom.groupId.replace(".","/")
+         def packaging = pom.packaging
+         NEXUS_ARTIFACT_PATH = "${groupId}/${artifactId}/${APP_VERSION}/${artifactId}-${APP_VERSION}.${packaging)"
       }
         
    }
@@ -54,7 +55,7 @@ node ("maven") {
 
          openshiftUtils.createProject(params.DEV_PROJECT, params.JENKINS_PROJECT)
          openshiftUtils.applyTemplate(params.DEV_PROJECT, "${WORKSPACE}/app/${params.APP_TEMPLATE}", params.APP_NAME,  APP_VERSION, params.APP_NAME, "${params.CUSTOM_TEMPLATE_PARAMETERS}" , [])
-         openshiftUtils.startBuildFromFile(params.DEV_PROJECT, params.APP_NAME, NEXUS_URL, true) 
+         openshiftUtils.startBuildFromFile(params.DEV_PROJECT, params.APP_NAME, "${params.NEXUS_RELEASE_REPOSITORY}/${NEXUS_ARTIFACT_PATH}", true) 
       }
    }
 
