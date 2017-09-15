@@ -1,7 +1,5 @@
 node ("maven") {
 
-   // FIXME this one will be extracted from pom.xml
-   def APP_VERSION = "1.0.1"
    // FIXME this one should be obtained as an addition of NEXUS_URL plus all the information declared in pom.xml for the application (groupId, artifactId, version)
    def NEXUS_URL="http://nexus-devops.192.168.99.100.nip.io/nexus/content/repositories/releases/com/redhat/consulting/spring/demo-rest/0.0.1/demo-rest-0.0.1.jar"
    	
@@ -21,6 +19,8 @@ node ("maven") {
       dir('app') {
          // Get source code from repository
          git "${params.APP_GIT_URL}" 
+         // extract info from pom.xml
+         def pom = readMavenPom file: "pom.xml"
          sh "${mvnCmd} clean package -DskipTests"
       }  
    }
@@ -36,8 +36,13 @@ node ("maven") {
    stage("Push artifact to Nexus") {
        
       echo "TOOD => Release process, that it should create a branch/tag on git, modify pom versions and upload the artifact to Nexus"
-      // this commented command will to the nexus part (if you just want that.. it works, but just once per version (or push it manually..)
-      //sh "${mvnCmd} deploy -DskipTests"
+      // FIXME I have manually pushed the artifact 0.0.1 in Nexus (mvn deploy) and the source code in master is 0.0.1. Once release process is designed there would not be any manual step
+      // extract information from pom.xml once pushed in git
+      dir('app') {
+         // extract info from pom.xml
+         def pom = readMavenPom file: "pom.xml"
+         APP_VERSION = pom.version
+      }
         
    }
 
