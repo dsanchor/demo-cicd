@@ -33,7 +33,7 @@ node ("maven") {
    stage("Push artifact to Nexus") {
        
       echo "TOOD => Release process, that it should create a branch/tag on git, modify pom versions and upload the artifact to Nexus"
-      // FIXME I have manually pushed the artifact 0.0.1 in Nexus (mvn deploy) and the source code in master is 0.0.1. Once release process is designed there would not be any manual step
+      // FIXME I have manually pushed the artifact 1.0.0 in Nexus (mvn deploy) and the source code in master is 1.0.0. Once release process is designed there would not be any manual step
       // extract information from pom.xml once pushed into git
       dir('app') {
          // extract info from pom.xml
