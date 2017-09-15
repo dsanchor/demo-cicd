@@ -42,7 +42,7 @@ node ("maven") {
          def artifactId = pom.artifactId
          def groupId = pom.groupId.replace(".","/")
          def packaging = pom.packaging
-         NEXUS_ARTIFACT_PATH = "${groupId}/${artifactId}/${APP_VERSION}/${artifactId}-${APP_VERSION}.${packaging)"
+         NEXUS_ARTIFACT_PATH = "${groupId}/${artifactId}/${APP_VERSION}/${artifactId}-${APP_VERSION}.${packaging}"
       }
         
    }
