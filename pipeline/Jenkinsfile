@@ -140,11 +140,12 @@ node ("maven") {
          echo "Executing full deployment"
          openshiftUtils.applyTemplate(params.PROD_PROJECT, "${WORKSPACE}/app/${params.APP_TEMPLATE}", "${params.APP_NAME}",  params.PROD_TAG, params.APP_NAME, "${params.CUSTOM_TEMPLATE_PARAMETERS}", ["BuildConfig", "ImageStream"] )
          openshiftUtils.deploy(params.PROD_PROJECT, "${params.APP_NAME}")
-         // if needed
-         sh "oc project ${params.PROD_PROJECT}"
-         sh "oc patch route/${params.APP_NAME} -p '{\"spec\": { \"alternateBackends\": [ ] } }'"
-         openshift.selector( "dc",  "${params.APP_NAME}-alternate" ).delete()
-         openshift.selector( "svc",  "${params.APP_NAME}-alternate" ).delete()
+         if (redeploy) {
+            sh "oc project ${params.PROD_PROJECT}"
+            sh "oc patch route/${params.APP_NAME} -p '{\"spec\": { \"alternateBackends\": [ ] } }'"
+            openshift.selector( "dc",  "${params.APP_NAME}-alternate" ).delete()
+            openshift.selector( "svc",  "${params.APP_NAME}-alternate" ).delete()
+         }
       }
    }
 

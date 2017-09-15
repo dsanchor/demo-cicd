@@ -72,7 +72,7 @@ def deploy(project, appName) {
             
       dc.related( 'pods' ).watch {
          // End the watch only when rolling new pods
-         echo "Pods being rolling are ${it.count()} while old ones were ${currentPods}"
+         echo "Total number of current pods are ${it.count()} while old ones were ${currentPods}"
 	 return it.count() > currentPods 
       }
       echo "Rolling out deployment"
