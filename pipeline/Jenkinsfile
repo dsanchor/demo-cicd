@@ -143,8 +143,10 @@ node ("maven") {
          if (redeploy) {
             sh "oc project ${params.PROD_PROJECT}"
             sh "oc patch route/${params.APP_NAME} -p '{\"spec\": { \"alternateBackends\": [ ] } }'"
-            openshift.selector( "dc",  "${params.APP_NAME}-alternate" ).delete()
-            openshift.selector( "svc",  "${params.APP_NAME}-alternate" ).delete()
+            openshift.withProject(params.PROD_PROJECT) {
+               openshift.selector( "dc",  "${params.APP_NAME}-alternate" ).delete()
+               openshift.selector( "svc",  "${params.APP_NAME}-alternate" ).delete()
+            }
          }
       }
    }
