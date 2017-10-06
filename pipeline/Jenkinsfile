@@ -32,11 +32,11 @@ node ("maven") {
 
    stage("Push artifact to Nexus") {
        
-      echo "TOOD => Release process, that it should create a branch/tag on git, modify pom versions and upload the artifact to Nexus"
-      // FIXME I have manually pushed the artifact 1.0.0 in Nexus (mvn deploy) and the source code in master is 1.0.0. Once release process is designed there would not be any manual step
-      // extract information from pom.xml once pushed into git
+      echo "Pushing artifact to Nexux ${params.NEXUS_URL}"
       dir('app') {
-         // extract info from pom.xml
+         // deploy
+         sh "${mvnCmd} deploy -Dnexus.url=${params.NEXUS_URL}"
+         // extract info from pom.xml to build NEXUS_ARTIFACT_PATH
          def pom = readMavenPom file: "pom.xml"
          APP_VERSION = pom.version
          def artifactId = pom.artifactId
@@ -55,9 +55,10 @@ node ("maven") {
 
          openshiftUtils.createProject(params.DEV_PROJECT, params.JENKINS_PROJECT)
          openshiftUtils.applyTemplate(params.DEV_PROJECT, "${WORKSPACE}/app/${params.APP_TEMPLATE}", params.APP_NAME,  APP_VERSION, params.APP_NAME, "${params.CUSTOM_TEMPLATE_PARAMETERS}" , [])
-         openshiftUtils.startBuildFromFile(params.DEV_PROJECT, params.APP_NAME, "${params.NEXUS_RELEASE_REPOSITORY}/${NEXUS_ARTIFACT_PATH}", true) 
+         openshiftUtils.startBuildFromFile(params.DEV_PROJECT, params.APP_NAME, "${params.NEXUS_URL}${params.NEXUS_RELEASE_REPOSITORY}/${NEXUS_ARTIFACT_PATH}", true) 
       }
    }
+
 
    stage("Deploy in *${params.DEV_PROJECT}*") {
       
