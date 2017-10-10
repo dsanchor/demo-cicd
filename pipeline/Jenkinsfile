@@ -23,7 +23,7 @@ node ("maven") {
    }
    
    // stash workspace
-   stash name: "workspace", includes: "workspace/**/*" 
+   stash name: "workspace", includes: "${WORKSPACE}/**/*" 
 
    stage("Unit Testing & Analysis") {
 
