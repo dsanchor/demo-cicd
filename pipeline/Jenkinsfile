@@ -100,8 +100,9 @@ node ("nodejs") {
    }
 
    stage("Integration tests in *${params.TEST_PROJECT}*") {
-       
-      echo "TOOD => Define integration tests"
+     
+      sh "npm install -g newman"
+      sh "newman run https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/tests/demo-rest.postman_collection.json -e https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/tests/environments/test.postman_environment.json"
         
    }
 
@@ -139,8 +140,9 @@ node ("nodejs") {
 
    stage("Integration tests in *${params.PROD_PROJECT}*") {
        
-      echo "TOOD => Define integration tests if needed.. "
-        
+      sh "npm install -g newman"
+      sh "newman run https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/tests/demo-rest.postman_collection.json -e https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/tests/environments/production.postman_environment.json"
+      
    }
 
    stage('Approval required') {
