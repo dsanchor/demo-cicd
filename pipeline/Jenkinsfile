@@ -21,6 +21,9 @@ node ("maven") {
          sh "${mvnCmd} clean package -DskipTests"
       }  
    }
+   
+   // stash workspace
+   stash name: "workspace", includes: "workspace/**/*" 
 
    stage("Unit Testing & Analysis") {
 
@@ -49,6 +52,9 @@ node ("maven") {
 }
 
 node ("nodejs") {
+   
+   // get workspace back
+   unstash "workspace" 
    
    stage("Build in Openshift") {
       
