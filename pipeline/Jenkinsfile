@@ -22,8 +22,8 @@ node ("maven") {
       }  
    }
    
-   // stash workspace
-   stash name: "workspace", includes: "${WORKSPACE}/**/*" 
+   // stash application template
+   stash name: "app-template", includes: "${WORKSPACE}/app/${params.APP_TEMPLATE}" 
 
    stage("Unit Testing & Analysis") {
 
@@ -53,8 +53,8 @@ node ("maven") {
 
 node ("nodejs") {
    
-   // get workspace back
-   unstash "workspace" 
+   // get app template back
+   unstash "app-template" 
    
    stage("Build in Openshift") {
       
