@@ -46,8 +46,10 @@ node ("maven") {
       }
         
    }
+}
 
-
+node ("nodejs") {
+   
    stage("Build in Openshift") {
       
       // no need to define a cluster if we have just one defined and it is the one where Jenkins is running 
@@ -70,7 +72,8 @@ node ("maven") {
 
    stage("Integration tests in *${params.DEV_PROJECT}*") {
        
-      echo "TOOD => Define integration tests"
+      sh "npm install -g newman"
+      sh "newman run https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/tests/demo-rest.postman_collection.json -e https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/tests/environments/development.postman_environment.json"
         
    }
 
