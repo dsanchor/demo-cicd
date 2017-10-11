@@ -6,6 +6,8 @@ node ("maven") {
       git "${params.CICD_GIT_URL}"
       // load openshift-utils functions (using this path as convention.. define a env var if desired...)
       openshiftUtils = load 'pipeline/functions/openshift-utils.groovy'
+      // load groovy functions
+      newman = load 'pipeline/functions/newman.groovy'
 
    }  
    // define maven with custom settings.xml (using this path as convention.. define a env var if desired...)
@@ -77,8 +79,7 @@ node ("nodejs") {
 
    stage("Integration tests in *${params.DEV_PROJECT}*") {
        
-      sh "npm install -g newman"
-      sh "newman run https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/tests/demo-rest.postman_collection.json -e https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/tests/environments/development.postman_environment.json"
+      newman.runTest(params.POSTMAN_TESTS_COLLECTION, params.POSTMAN_DEV_ENVIRONMENT_CONFIG)
         
    }
 
@@ -101,8 +102,7 @@ node ("nodejs") {
 
    stage("Integration tests in *${params.TEST_PROJECT}*") {
      
-      sh "npm install -g newman"
-      sh "newman run https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/tests/demo-rest.postman_collection.json -e https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/tests/environments/test.postman_environment.json"
+      newman.runTest(params.POSTMAN_TESTS_COLLECTION, params.POSTMAN_TEST_ENVIRONMENT_CONFIG)
         
    }
 
@@ -140,8 +140,7 @@ node ("nodejs") {
 
    stage("Integration tests in *${params.PROD_PROJECT}*") {
        
-      sh "npm install -g newman"
-      sh "newman run https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/tests/demo-rest.postman_collection.json -e https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/tests/environments/production.postman_environment.json"
+      newman.runTest(params.POSTMAN_TESTS_COLLECTION, params.POSTMAN_PROD_ENVIRONMENT_CONFIG)
       
    }
 
