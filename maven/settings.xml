@@ -7,7 +7,7 @@
       <repositories>
         <repository>
             <id>nexus-group-repository</id>
-            <url>http://nexus-devops.apps.d-sancho.com/nexus/content/groups/public/</url>
+            <url>http://nexus-cicd.apps.d-sancho.com/nexus/content/groups/public/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -19,7 +19,7 @@
       <pluginRepositories>
         <pluginRepository>
             <id>nexus-group-repository</id>
-            <url>http://nexus-devops.apps.d-sancho.com/nexus/content/groups/public/</url>
+            <url>http://nexus-cicd.apps.d-sancho.com/nexus/content/groups/public/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -48,7 +48,7 @@
     <mirror>
       <id>nexus-group</id>
       <name>Nexus mirror</name>
-      <url>http://nexus-devops.apps.d-sancho.com/nexus/content/groups/public</url>
+      <url>http://nexus-cicd.apps.d-sancho.com/nexus/content/groups/public</url>
       <mirrorOf>*</mirrorOf>
     </mirror>
   </mirrors>
