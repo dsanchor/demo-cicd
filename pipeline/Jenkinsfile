@@ -138,9 +138,12 @@ node ("nodejs") {
       }
    }
 
-   stage("Integration tests in *${params.PROD_PROJECT}*") {
-       
-      newman.runTest(params.POSTMAN_TESTS_COLLECTION, params.POSTMAN_PROD_ENVIRONMENT_CONFIG)
+   stage("Integration tests against alternate pods in *${params.PROD_PROJECT}*") {
+      if (redeploy) {
+            newman.runTest(params.POSTMAN_TESTS_COLLECTION, params.POSTMAN_ALTPROD_ENVIRONMENT_CONFIG)
+      } else {
+            newman.runTest(params.POSTMAN_TESTS_COLLECTION, params.POSTMAN_PROD_ENVIRONMENT_CONFIG)
+      } 
       
    }
 
@@ -167,6 +170,12 @@ node ("nodejs") {
             echo "No need to update any deployment.. since it has been the first one"
          }
       }
+   }
+
+   stage("Integration tests in *${params.PROD_PROJECT}*") {
+       
+      newman.runTest(params.POSTMAN_TESTS_COLLECTION, params.POSTMAN_PROD_ENVIRONMENT_CONFIG)
+      
    }
 
 
