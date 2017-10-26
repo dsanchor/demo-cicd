@@ -29,8 +29,15 @@ node ("maven") {
    stage("Unit Testing & Analysis") {
 
       dir('app') {
-         echo "TOOD => Perform some unit testing here!!!!"
-         echo "TOOD => You may perform some static analysis as well.. integrate with sonarq"
+         parallel (
+           'Test': {
+               sh "${mvnCmd} test"
+               step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
+           },
+           'Static Analysis': {
+               sh "${mvnCmd} sonar:sonar -Dsonar.host.url=${params.SONAR_URL} -DskipTests=true"
+           }
+         )
       }        
    }
 
