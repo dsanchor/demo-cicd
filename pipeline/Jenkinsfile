@@ -90,10 +90,10 @@ node ("nodejs") {
         
    }
 
-   stage('Approval required') {
+   //stage('Approval required') {
       // TODO send notification
-      input "Ready to update ${params.TEST_PROJECT} project with application ${params.APP_NAME} version ${APP_VERSION}?"
-   }
+   //   input "Ready to update ${params.TEST_PROJECT} project with application ${params.APP_NAME} version ${APP_VERSION}?"
+   //}
 
    stage("Deploy in *${params.TEST_PROJECT}*") {
       
@@ -115,10 +115,10 @@ node ("nodejs") {
 
    stage('Approval required') {
       // TODO send notification
-      input "A/B deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME} version ${APP_VERSION}?"
+      input "Blue/Green deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME} version ${APP_VERSION}?"
    }
 
-   stage("Deploy A/B in *${params.PROD_PROJECT}*") {
+   stage("Deploy Blue/Green in *${params.PROD_PROJECT}*") {
       
       openshift.withCluster() { 
 
@@ -129,11 +129,11 @@ node ("nodejs") {
             redeploy = openshift.selector("dc", params.APP_NAME).exists()
          }
          if (redeploy) {
-            echo "Executing A/B deployment"
+            echo "Executing Blue/Green deployment"
             // create alternate deployment with new version
             openshiftUtils.applyTemplate(params.PROD_PROJECT, "${params.APP_TEMPLATE}", "${params.APP_NAME}-alternate",  params.PROD_TAG, params.APP_NAME, "${params.CUSTOM_TEMPLATE_PARAMETERS}", ["BuildConfig", "ImageStream"] )
             openshiftUtils.deploy(params.PROD_PROJECT, "${params.APP_NAME}-alternate")
-            // configure A/B routing
+            // configure Blue/Green routing
             sh "oc project ${params.PROD_PROJECT}"
             sh "oc patch route/${params.APP_NAME} -p '{\"spec\": { \"alternateBackends\": [ { \"kind\": \"Service\", \"name\": \"${params.APP_NAME}-alternate\", \"weight\": 20 } ] } }'"
          } else {
