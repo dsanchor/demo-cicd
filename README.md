@@ -43,6 +43,7 @@ oc new-app --docker-image=sonatype/nexus
 oc expose svc/nexus
 ```
 **Access to your Nexus server**
+	
 	1) Get route
 ```
 oc get route | grep nexus | awk '{print $2}'
@@ -58,6 +59,7 @@ oc expose svc/sonarqube
 ```
 	
 **Access to your Sonarqube server**
+
 	1) Get route
 ```
 oc get route | grep sonarqube | awk '{print $2}'
@@ -66,7 +68,7 @@ sonarqube-cicd.apps.d-sancho.com
 	2) Access main dashboard and login with admin/admin
 	http://sonarqube-cicd.apps.d-sancho.com	
 
-### 5. Jenkins server, 
+### 5. Jenkins server
 
 	We are going to include some plugins that are not included by default in the current Jenkins image provided by Openshift (such as [jenkins-client-plugin](https://github.com/openshift/jenkins-client-plugin)). However, it is very likely that OCP 3.7 will provide this plugin by default (current version of OCP while writing this was 3.6).
 	
