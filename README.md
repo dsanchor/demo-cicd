@@ -15,7 +15,7 @@ The pipeline is described by the following diagram. I will explain each stage in
 
 ![Screenshot](cicd-pipeline.png)
 	
-## Environment
+## Environment description
 
 This demonstration requires Openshift version >= 3.6 (we will make use of environment variables for the pipeline BuildConfig). If you need to create a local cluster, have a look at this [site](https://developers.redhat.com/products/cdk/overview/).
 
@@ -167,11 +167,18 @@ Main stages and actions performed during this CD process are:
 
 ## Pipeline creation
 
-TODO describe demo project and BC 
+As we have seen through this document, I have defined the pipeline as "generic". This means that it could be used by any application that has similar characteristics as explained in the introduction. It is also remarkable that having the pipeline as code and centralized will facilitate any update on it and the propagation of these changes to all the configured pipelines. 
+
+Then, to make it specific to the given application, there are some parameters that have to be defined, such as the git url of the source code for the application, the names for the DEV/TEST/PROD projects, nexus and sonar urls.. and so on. As an example, have a look at the one I have used for this [demo application](https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/templates/bc-pipeline.yml). It is defined as a BuildConfig, where the strategy is set to jenkinsPipelineStrategy.
+
+In order to create the BuildConfig object in openshift and trigger the pipeline, execute the following commands:
+
 ```
 oc create -f https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/templates/bc-pipeline.yml -n cicd
 oc start-build demo-rest-pipeline -n cicd
 ```
+
+There will be some manual approval steps to complete the whole CI/CD process. 
 
 TODO next steps (such as modifying the code and version of the app and trigger the pipeline again)
 Notes:
