@@ -14,7 +14,7 @@ def createProject(project, jenkinsProject, imageStreamProject) {
    openshift.policy("add-role-to-user", "edit", "system:serviceaccount:${jenkinsProject}:jenkins", "-n", project)
    // if project and imageStreamProject are different, add system:image-puller role to project sa
    if (!project.equals(imageStreamProject)) {
-      oc policy add-role-to-group system:image-puller system:serviceaccounts:${project} -n ${imageStreamProject}	   
+      openshift.policy("add-role-to-group", "system:image-puller", "system:serviceaccounts:${project}", "-n",  imageStreamProject)	   
    }
 }
 
