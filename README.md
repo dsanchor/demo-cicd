@@ -18,6 +18,7 @@ The pipeline is described by the following diagram. I will explain each stage in
 ## Environment
 
 This demonstration requires Openshift version >= 3.6 (we will make use of environment variables for the pipeline BuildConfig). If you need to create a local cluster, have a look at this [site](https://developers.redhat.com/products/cdk/overview/).
+
 We also require a cluster admin user in Openshift (we need to provide some specific roles to certain service accounts).
 
 As part of the infrastructure, we will create:
@@ -54,8 +55,8 @@ oc expose svc/nexus
 oc get route | grep nexus | awk '{print $2}'
 nexus-cicd.apps.d-sancho.com
 ```		
-2) Access main dashboard and login with admin/admin123
-http://nexus-cicd.apps.d-sancho.com/nexus		
+2) Access main dashboard (http://nexus-cicd.apps.d-sancho.com/nexus) and login with admin/admin123
+		
 
 ### 4. Do the same with Sonarqube
 ```
@@ -70,24 +71,24 @@ oc expose svc/sonarqube
 oc get route | grep sonarqube | awk '{print $2}'
 sonarqube-cicd.apps.d-sancho.com
 ```	
-2) Access main dashboard and login with admin/admin
-http://sonarqube-cicd.apps.d-sancho.com	
+2) Access main dashboard (http://sonarqube-cicd.apps.d-sancho.com) and login with admin/admin
+
 
 ### 5. Jenkins server
 
 We are going to include some plugins that are not included by default in the current Jenkins image provided by Openshift (such as [jenkins-client-plugin](https://github.com/openshift/jenkins-client-plugin)). However, it is very likely that OCP 3.7 will provide this plugin by default (current version of OCP while writing this was 3.6).
 	
-**Create custom jenkins image with some additional plugins. This image will be created on the openshift namespace, so it will be available from any namespace**
+**Create custom jenkins image** with some additional plugins. This image will be created on the openshift namespace, so it will be available from any namespace
 ```
 oc new-build jenkins:2~https://github.com/dsanchor/jenkins.git --name=jenkins-custom -n openshift
 ```		
-**Once the new image is built, deploy jenkins (ephemeral for this demo)**
+Once the new image is built, **deploy jenkins (ephemeral for this demo)**
 ```
 oc new-app jenkins-ephemeral -p NAMESPACE=openshift -p=JENKINS_IMAGE_STREAM_TAG=jenkins-custom:latest -p MEMORY_LIMIT=2Gi -n cicd
 oc expose svc/jenkins
 ```
 
-**And finally, give self-provisioner cluster role to jenkins service account. For this operation, you will require cluster admin privileges (Example, from any master node: oc login -u system:admin)** 
+And finally, **give self-provisioner cluster role to jenkins service account**. For this operation, you will require cluster admin privileges (Example, from any master node: oc login -u system:admin)
 ```
 oc adm policy add-cluster-role-to-user self-provisioner system:serviceaccount:cicd:jenkins
 ```
@@ -130,7 +131,7 @@ In this case, we will use a NodeJs slave for running the CD part. This is mainly
 
 The execution of the pipeline will be performed and affect 3 different environments (Openshift projects), which names are parameterized per project (as many other project specific parameters, but I will talk about this later). 
 
-Main stages and actions perform during this CD process are:
+Main stages and actions performed during this CD process are:
 
 - On DEV environment
    - Initialization and build
