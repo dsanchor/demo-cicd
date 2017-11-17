@@ -64,7 +64,9 @@ Main stages and actions performed during this CD process are:
    - Run integration tests in DEV
       - This application exposes a REST API that could be easily tested by tools such as Postman and Newman. I have created a common test collection with Postman that will be used for testing the application against all different environments (DEV, TEST, PROD). Newman will then use this collection plus the specific environment config file to run these tests from the pipeline. For more details, see the test collection and environment definitions in the [application repository](https://github.com/dsanchor/demo-rest/tree/master/openshift/tests). All these files have been created using the Postman tool and you could easily export/import them. 
 
-   If all tests have passed successfully, the pipeline will move to next stage, which is deploying the application in the TEST environment.
+   If all tests have passed successfully, the pipeline will move to next stage, which is deploying the application in the TEST environment. One example of the test output shown in the jenkins job is:
+
+![Screenshot](test-results.png)
 
 - On TEST environment
    - Deploy in TEST
@@ -157,7 +159,6 @@ oc new-build jenkins:2~https://github.com/dsanchor/jenkins.git --name=jenkins-cu
 Once the new image is built, **deploy jenkins (ephemeral for this demo)**
 ```
 oc new-app jenkins-ephemeral -p NAMESPACE=openshift -p=JENKINS_IMAGE_STREAM_TAG=jenkins-custom:latest -p MEMORY_LIMIT=2Gi -n cicd
-oc expose svc/jenkins
 ```
 
 And finally, **give self-provisioner cluster role to jenkins service account**. For this operation, you will require cluster admin privileges (Example, from any master node: oc login -u system:admin)
