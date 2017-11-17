@@ -180,6 +180,10 @@ oc start-build demo-rest-pipeline -n cicd
 
 There will be some manual approval steps to complete the whole CI/CD process. 
 
+We are manually triggering the pipeline, but we could have configured any git/web hook that would have automatically triggered it. One example, aligned with what I mentioned before about "feature branching", we could have defined a hook when a pull request to the master branch is accepted. 
+
+
+
 TODO next steps (such as modifying the code and version of the app and trigger the pipeline again)
 Notes:
 	Change pom.xml to avoid nexus duplications
