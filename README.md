@@ -11,14 +11,15 @@ The term generic that I used before is limited by the following characteristics:
 
 This means, this pipeline could be reused by any application that matches these characteristics. For the demonstration that I will describe next, I have used a simple application, that it is implemented with Spring Boot and exposing a very simple REST API. You can find it [here](https://github.com/dsanchor/demo-rest)
 
-The pipeline we are going to show is described by the following diagram. I will explain each stage in detail later in this document.
+The pipeline is described by the following diagram. I will explain each stage in detail later in this document.
 
 ![Screenshot](cicd-pipeline.png)
 	
 ## Environment
 
-This demonstration requires Openshift version >= 3.6 (Because we will make use of environment variables for the pipeline BuildConfig). 
-We also require a cluster admin user in Openshift (We need to provide some specific roles to certain service accounts)
+This demonstration requires Openshift version >= 3.6 (we will make use of environment variables for the pipeline BuildConfig). 
+We also require a cluster admin user in Openshift (we need to provide some specific roles to certain service accounts).
+
 As part of the infrastructure, we will create:
 - Jenkins server, in charge of running the pipeline.
 - Nexus, where all deliverable artifacts will be pushed to. We will also use it as proxy and cache for third party libraries.
@@ -64,7 +65,7 @@ oc expose svc/sonarqube
 ```
 oc get route | grep sonarqube | awk '{print $2}'
 sonarqube-cicd.apps.d-sancho.com
-```		
+```	
 2) Access main dashboard and login with admin/admin
 http://sonarqube-cicd.apps.d-sancho.com	
 
@@ -87,7 +88,9 @@ oc expose svc/jenkins
 oc adm policy add-cluster-role-to-user self-provisioner system:serviceaccount:cicd:jenkins
 ```
 
-## Create pipeline
+## Pipeline description
+
+## Pipeline creation
 
 TODO describe demo project and BC 
 ```
