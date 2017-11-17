@@ -9,7 +9,7 @@ The term generic that I used before is limited by the following characteristics:
 - The deliverable (artifact) is pushed in Nexus
 - The application exposes a REST API, so integration testing could be automated (I have used Postman + Newman)
 
-This means, this pipeline could be reused by any application that matches these characteristics. For the demonstration that I will describe next, I have used a simple application, that it is implemented with Spring Boot and exposing a very simple REST API. You can find it [here](https://github.com/dsanchor/demo-rest)
+This means, this pipeline could be reused by any application that matches these characteristics. For the demonstration that I will describe next, I have used a simple application, that it is implemented with Spring Boot and exposes a very simple REST API. You can find it [here](https://github.com/dsanchor/demo-rest)
 
 The pipeline is described by the following diagram. I will explain each stage in detail later in this document.
 
@@ -89,6 +89,36 @@ oc adm policy add-cluster-role-to-user self-provisioner system:serviceaccount:ci
 ```
 
 ## Pipeline description
+
+I have divided the pipeline in two parts. First part (1) is all about CI (Continuous Integration), while the second part (2) is about CD (Continuous Delivery) on Openshift.
+
+### 1. CI (Continuous Integration)
+
+![Screenshot](ci.png)
+
+As shown in the previous diagram, the CI part of the pipeline is divided 3 main stages, although there is also a preparation phase. I will enumerate every action that is perform during this CI process:
+
+- Preparation:
+   - Cloning and loading some pipeline utils functions that will be used during the whole process
+   - Initializing Maven command with a custom [settings.xml](https://github.com/dsanchor/demo-cicd/blob/master/maven/settings.xml). Notice that you will have to **configure this settings.xml with the right values for your environment**
+
+- Maven package
+   - Cloning application source code
+   - Package application
+   - Stash the application template. This means, saving the template, it will be used later and we will not have to download/clone it again
+
+- Unit testing & Analysis
+   - Run unit testing with Maven
+   - Publish sonar report 
+
+- Push Artifact to Nexus
+   - Version will be extracted from pom.xml
+   - Artifact will be uploaded to a release repository defined in pom.xml (distribution management) and store in Nexus. Notice that Nexus will reject uploading the same version twice. So it is important to **modify this version in the application pom.xml prior triggering this pipeline**. It is not the aim of this demo to define any strategy for version management or git branching, but a good and simple approach is "feature branching". 
+
+### 2. CD (Continuous Delivery)
+
+![Screenshot](cd.png)
+
 
 ## Pipeline creation
 
