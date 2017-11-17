@@ -17,11 +17,11 @@ The pipeline is described by the following diagram. I will explain each stage in
 	
 ## Environment description
 
-This demonstration requires Openshift version >= 3.6 (we will make use of environment variables for the pipeline BuildConfig). If you need to create a local cluster, have a look at this [site](https://developers.redhat.com/products/cdk/overview/).
+This demonstration requires Openshift version >= 3.6 (we will make use of environment variables for the pipeline BuildConfig). If you need to create a local cluster on your workstation, have a look at this [site](https://developers.redhat.com/products/cdk/overview/).
 
 We also require a cluster admin user in Openshift (we need to provide some specific roles to certain service accounts).
 
-As part of the infrastructure, we will create:
+As part of the infrastructure, we will create a:
 - Jenkins server, in charge of running the pipeline.
 - Nexus, where all deliverable artifacts will be pushed to. We will also use it as proxy and cache for third party libraries.
 - Sonarqube, used to analize the application against a set of quality rules defined for an standard java application.
