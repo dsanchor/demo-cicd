@@ -2,28 +2,28 @@
 
 ## Introduction 
 
-	This repository describes and implements a generic Jenkins pipeline that could be used to perform a CI/CD workflow for your application on Openshift.
-	The term generic that I used before is limited by the following characteristics:
-	* The application is compiled and packaged by Maven
-	* The static analysis is done on Sonarqube
-	* The deliverable (artifact) is pushed in Nexus
-        * The application exposes a REST API, so integration testing could be automated (I have used Postman + Newman)
+This repository describes and implements a generic Jenkins pipeline that could be used to perform a CI/CD workflow for your application on Openshift.
+The term generic that I used before is limited by the following characteristics:
+- The application is compiled and packaged by Maven
+- The static analysis is done on Sonarqube
+- The deliverable (artifact) is pushed in Nexus
+- The application exposes a REST API, so integration testing could be automated (I have used Postman + Newman)
 
-	This means, this pipeline could be reused by any application that matches these characteristics. For the demonstration that I will describe next, I have used a simple application, that it is implemented with Spring Boot and exposing a very simple REST API. You can find it [here](https://github.com/dsanchor/demo-rest)
+This means, this pipeline could be reused by any application that matches these characteristics. For the demonstration that I will describe next, I have used a simple application, that it is implemented with Spring Boot and exposing a very simple REST API. You can find it [here](https://github.com/dsanchor/demo-rest)
 
-	The pipeline we are going to show is described by the following diagram. I will explain each stage in detail later in this document.
+The pipeline we are going to show is described by the following diagram. I will explain each stage in detail later in this document.
 
 ![Screenshot](cicd-pipeline.png)
 	
 ## Environment
 
-	This demonstration requires Openshift version >= 3.6 (Because we will make use of environment variables for the pipeline BuildConfig). 
-	We also require a cluster admin user in Openshift (We need to provide some specific roles to certain service accounts)
-	As part of the infrastructure, we will create:
-        * Jenkins server, in charge of running the pipeline.
-        * Nexus, where all deliverable artifacts will be pushed to. We will also use it as proxy and cache for third party libraries.
-        * Sonarqube, used to analize the application against a set of quality rules defined for an standard java application.
-	
+This demonstration requires Openshift version >= 3.6 (Because we will make use of environment variables for the pipeline BuildConfig). 
+We also require a cluster admin user in Openshift (We need to provide some specific roles to certain service accounts)
+As part of the infrastructure, we will create:
+- Jenkins server, in charge of running the pipeline.
+- Nexus, where all deliverable artifacts will be pushed to. We will also use it as proxy and cache for third party libraries.
+- Sonarqube, used to analize the application against a set of quality rules defined for an standard java application.
+
 
 ## Preparation
 	
@@ -35,7 +35,7 @@ oc login -u admin -p 123456 https://d-sancho.com:8443
 ```
  oc new-project cicd 
 ```
-	Notice that I will explain all the steps that must be done in order to have the infrastructure ready. I could have prepared an Openshift template with all these applications defined and configured already, but I prefered to show you how to manually do it, so you were aware about every single step.
+Notice that I will explain all the steps that must be done in order to have the infrastructure ready. I could have prepared an Openshift template with all these applications defined and configured already, but I prefered to show you how to manually do it, so you were aware about every single step.
 
 ### 3. Create a Nexus server (ephemeral for this demo) and expose it externally 
 ```
@@ -44,13 +44,13 @@ oc expose svc/nexus
 ```
 **Access to your Nexus server**
 	
-	1) Get route
+1) Get route
 ```
 oc get route | grep nexus | awk '{print $2}'
 nexus-cicd.apps.d-sancho.com
 ```		
-	2) Access main dashboard and login with admin/admin123
-	http://nexus-cicd.apps.d-sancho.com/nexus		
+2) Access main dashboard and login with admin/admin123
+http://nexus-cicd.apps.d-sancho.com/nexus		
 
 ### 4. Do the same with Sonarqube
 ```
@@ -60,17 +60,17 @@ oc expose svc/sonarqube
 	
 **Access to your Sonarqube server**
 
-	1) Get route
+1) Get route
 ```
 oc get route | grep sonarqube | awk '{print $2}'
 sonarqube-cicd.apps.d-sancho.com
 ```		
-	2) Access main dashboard and login with admin/admin
-	http://sonarqube-cicd.apps.d-sancho.com	
+2) Access main dashboard and login with admin/admin
+http://sonarqube-cicd.apps.d-sancho.com	
 
 ### 5. Jenkins server
 
-	We are going to include some plugins that are not included by default in the current Jenkins image provided by Openshift (such as [jenkins-client-plugin](https://github.com/openshift/jenkins-client-plugin)). However, it is very likely that OCP 3.7 will provide this plugin by default (current version of OCP while writing this was 3.6).
+We are going to include some plugins that are not included by default in the current Jenkins image provided by Openshift (such as [jenkins-client-plugin](https://github.com/openshift/jenkins-client-plugin)). However, it is very likely that OCP 3.7 will provide this plugin by default (current version of OCP while writing this was 3.6).
 	
 **Create custom jenkins image with some additional plugins. This image will be created on the openshift namespace, so it will be available from any namespace**
 ```
