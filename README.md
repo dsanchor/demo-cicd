@@ -96,7 +96,7 @@ I have divided the pipeline in two parts. First part (1) is all about CI (Contin
 
 ![Screenshot](ci.png)
 
-As shown in the previous diagram, the CI part of the pipeline is divided 3 main stages, although there is also a preparation phase. I will enumerate every action that is perform during this CI process:
+As shown in the previous diagram, the CI part of the pipeline is divided 3 main stages, although there is also a preparation phase. I will enumerate every action that is performed during this CI process:
 
 - Preparation:
    - Cloning and loading some pipeline utils functions that will be used during the whole process
@@ -113,7 +113,7 @@ As shown in the previous diagram, the CI part of the pipeline is divided 3 main 
 
 - Push Artifact to Nexus
    - Version will be extracted from pom.xml
-   - Artifact will be uploaded to a release repository defined in pom.xml (distribution management) and store in Nexus. Notice that Nexus will reject uploading the same version twice. So it is important to **modify this version in the application pom.xml prior triggering this pipeline**. It is not the aim of this demo to define any strategy for version management or git branching, but a good and simple approach is "feature branching". 
+   - Artifact will be uploaded to a release repository defined in pom.xml (distribution management) and store in Nexus. Notice that Nexus will reject uploading the same version twice. So it is important to **modify this version in the application pom.xml prior triggering this pipeline**. It is not the aim of this demo to define any strategy for version management or git branching, but a good and simple approach is "feature branching". In this case, you will create a "git branch" for every new feature (or hotfix) and you will merge it back to the master branch once it is finished. It is before merging when you could define a new version. Also, you have the possibility of using the well known maven release plugin to automate the version management and releases process. 
 
 ### 2. CD (Continuous Delivery)
 
