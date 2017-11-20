@@ -2,7 +2,8 @@
 
 def runTest(testCollection, testEnvironment) {
    echo "Testing collection ${testCollection} against environment ${testEnvironment}"
-   // install newman if not present 
+   // TODO create a jenkins slave image with newman install
+   // meanwhile, install it everytime...
    sh "npm install -g newman"
    sh "newman run ${testCollection} -e ${testEnvironment}"
 }
