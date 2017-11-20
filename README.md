@@ -188,7 +188,7 @@ There will be some manual approval steps to complete the whole CI/CD process, on
 
 ## Application configuration
 
-To see all details about what have to be defined on the application side, move to the [demo application repository](https://github.com/dsanchor/demo-rest) now. 
+To see all details about what have been defined on the application side (specific pipeline parameters), move to the [demo application repository](https://github.com/dsanchor/demo-rest) and have a look at the [BuildConfig yaml file](https://github.com/dsanchor/demo-rest/blob/master/openshift/templates/bc-pipeline.yml). 
 
 
 
