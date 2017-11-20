@@ -185,7 +185,11 @@ oc start-build demo-rest-pipeline -n cicd
 
 We are manually triggering the pipeline, but we could have configured any git/web hook that would have automatically triggered it. One example, aligned with what I mentioned before about "feature branching", we could have defined a hook when a pull request to the master branch is accepted. 
 
-There will be some manual approval steps to complete the whole CI/CD process, one before performing the blue/green deployment in production and then, one before deploying all new pods in production. 
+There will be some manual approval steps to complete the whole CI/CD process, one before performing the blue/green deployment in production and last before deploying all new pods in production.
+
+Final screenshot of a pipeline once it has been executed: 
+
+![Screenshot](ocp-pipeline-screen.png)
 
 ## Application configuration
 
