@@ -190,5 +190,27 @@ There will be some manual approval steps to complete the whole CI/CD process, on
 
 To see all details about what have been defined on the application side (specific pipeline parameters), move to the [demo application repository](https://github.com/dsanchor/demo-rest) and have a look at the [BuildConfig yaml file](https://github.com/dsanchor/demo-rest/blob/master/openshift/templates/bc-pipeline.yml). 
 
+## Commands summary
 
+```
+// login
+oc login -u admin -p 123456 https://d-sancho.com:8443
+//create cicd project
+oc new-project cicd 
+// deploy nexus
+oc new-app --docker-image=sonatype/nexus -n cicd
+oc expose svc/nexus
+// deploy sonarqube
+oc new-app --docker-image=openshiftdemos/sonarqube:6.5 -n cicd
+oc expose svc/sonarqube
+// build custom jenkins image
+oc new-build jenkins:2~https://github.com/dsanchor/jenkins.git --name=jenkins-custom -n openshift
+// wait for the jenkins image to be built and deploy it
+oc new-app jenkins-ephemeral -p NAMESPACE=openshift -p=JENKINS_IMAGE_STREAM_TAG=jenkins-custom:latest -p MEMORY_LIMIT=2Gi -n cicd
+// as cluster-admin user, give self-provisioner role to jenkis sa
+oc adm policy add-cluster-role-to-user self-provisioner system:serviceaccount:cicd:jenkins
+// create pipeline for demo project and trigger it
+oc create -f https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/templates/bc-pipeline.yml -n cicd
+oc start-build demo-rest-pipeline -n cicd
+```
 
