@@ -17,7 +17,7 @@ The pipeline is described by the following diagram. I will explain each stage in
 
 ## Pipeline description
 
-I have divided the pipeline in two parts. First part (1) is all about CI (Continuous Integration), while the second part (2) is about CD (Continuous Delivery) on Openshift.
+I have divided the pipeline in two parts. First part (1) is all about CI (Continuous Integration), while the second part (2) is about CD (Continuous Delivery) on Openshift. The pipeline code is in a [Jenkinsfile](https://github.com/dsanchor/demo-cicd/blob/master/pipeline/Jenkinsfile) and it uses some common functions located under [pipeline/functions](https://github.com/dsanchor/demo-cicd/tree/master/pipeline/functions) directory.
 
 ### 1. CI (Continuous Integration)
 
@@ -214,4 +214,3 @@ oc adm policy add-cluster-role-to-user self-provisioner system:serviceaccount:ci
 oc create -f https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshift/templates/bc-pipeline.yml -n cicd
 oc start-build demo-rest-pipeline -n cicd
 ```
-
