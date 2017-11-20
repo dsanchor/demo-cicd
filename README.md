@@ -7,7 +7,7 @@ The term generic that I used before is limited by the following characteristics:
 - The application is compiled and packaged by Maven
 - The static analysis is done on Sonarqube
 - The deliverable (artifact) is pushed in Nexus
-- The application exposes a REST API, so integration testing could be automated (I have used Postman + Newman)
+- The application exposes a REST API and integration testing could be automated (I have used Postman + Newman)
 
 This means, this pipeline could be reused by any application that matches these characteristics. For the demonstration that I will describe next, I have used a simple application, that it is implemented with Spring Boot and exposes a very simple REST API. You can find it [here](https://github.com/dsanchor/demo-rest)
 
