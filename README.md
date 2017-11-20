@@ -51,13 +51,14 @@ This CI process will run on a Maven slave in Openshift. To set it in the pipelin
 
 In this case, we will use a NodeJs slave for running the CD part. This is mainly because for running the tests we will use Postman+Newman and last one requires npm. Notice then that all the code related to CD is enclosed inside "node ("nodejs") { .... }"
 
-The execution of the pipeline will be performed and affect 3 different environments (Openshift projects), which names are parameterized per project (as many other project specific parameters, but I will talk about this later). 
+The execution of the pipeline will be performed and affect 3 different environments (Openshift projects), which names are parameterized per application (as many other application specific parameters, but I will talk about this later). 
 
 Main stages and actions performed during this CD process are:
 
 - On DEV environment
    - Initialization and build
-      - Create DEV project based on given parameter name (ex: development, team-a-development...). In this document, it will be always referred as DEV. If the project already exists, "edit" role should be manually added to the jenkins ServiceAccount in order to give Jenkins the right privileges to trigger builds, deploys and create all necessary objects from the template. If that is your case, execute: oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n DEV
+      - Create DEV project based on given parameter name (ex: development, team-a-development...). In this document, it will be always referred as DEV. 
+      If the project already exists, "edit" role should be manually added to the jenkins ServiceAccount in order to give Jenkins the right privileges to trigger builds, deploys and create all necessary objects from the template. If that is your case, execute: oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n DEV
       - Create/Update all Openshift objects (ImageStream, DeploymentConfig, BuildConfig and so on) in DEV project as declared in the application template. For more details about which objects are going to be created, have a look at the [template](https://github.com/dsanchor/demo-rest/blob/master/openshift/templates/demo-rest-template.yml) I will use in this demo.
       - Build application image. It will get the application binaries from Nexus, create a new image and publish it in the internal registry
    - Deploy in DEV
@@ -70,7 +71,8 @@ Main stages and actions performed during this CD process are:
 
 - On TEST environment
    - Deploy in TEST
-      - Create TEST project based on given parameter name (ex: test, team-a-test...). In this document, it will be always referred as TEST. If the project already exists, "edit" role should be manually added to the jenkins ServiceAccount in order to give Jenkins the right privileges to trigger deploys and create all necessary objects from the template. If that is your case, execute: oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n TEST
+      - Create TEST project based on given parameter name (ex: test, team-a-test...). In this document, it will be always referred as TEST. 
+      If the project already exists, "edit" role should be manually added to the jenkins ServiceAccount in order to give Jenkins the right privileges to trigger deploys and create all necessary objects from the template. If that is your case, execute: oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n TEST
       - Promote image. That is, tag image that has been created in DEV to a know tag that is used in TEST
       - Create/Update all Openshift objects in TEST project as declared in the application template, but in this case, neither BuildConfig and ImageStream is created, since the image has been created in DEV.
       - Deploy application
@@ -80,7 +82,8 @@ Main stages and actions performed during this CD process are:
 
 - On PROD environment
    - Blue/Green deployment in PROD
-      - Create PROD project based on given parameter name (ex: production, team-a-production...). In this document, it will be always referred as PROD. If the project already exists, "edit" role should be manually added to the jenkins ServiceAccount in order to give Jenkins the right privileges to trigger deploys and create all necessary objects from the template. If that is your case, execute: oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n PROD
+      - Create PROD project based on given parameter name (ex: production, team-a-production...). In this document, it will be always referred as PROD. 
+      If the project already exists, "edit" role should be manually added to the jenkins ServiceAccount in order to give Jenkins the right privileges to trigger deploys and create all necessary objects from the template. If that is your case, execute: oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n PROD
       - Promote image. That is, tag image that has been created in DEV to a know tag that is used in PROD
       - Create/Update all Openshift objects in PROD project as declared in the application template, but in this case, neither BuildConfig and ImageStream is created, since the image has been created in DEV.
       - Blue/Green deployment in PROD. Just some percentage of the existing pods will be updated with new application version.
@@ -179,14 +182,13 @@ oc create -f https://raw.githubusercontent.com/dsanchor/demo-rest/master/openshi
 oc start-build demo-rest-pipeline -n cicd
 ```
 
-There will be some manual approval steps to complete the whole CI/CD process. 
-
 We are manually triggering the pipeline, but we could have configured any git/web hook that would have automatically triggered it. One example, aligned with what I mentioned before about "feature branching", we could have defined a hook when a pull request to the master branch is accepted. 
 
+There will be some manual approval steps to complete the whole CI/CD process, one before performing the blue/green deployment in production and then, one before deploying all new pods in production. 
+
+## Application configuration
+
+To see all details about what have to be defined on the application side, move to the [demo application repository](https://github.com/dsanchor/demo-rest) now. 
 
 
-TODO next steps (such as modifying the code and version of the app and trigger the pipeline again)
-TODO document application
-Notes:
-	Change pom.xml to avoid nexus duplications
 
