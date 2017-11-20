@@ -191,7 +191,15 @@ There will be some manual approval steps to complete the whole CI/CD process, on
 
 To see all details about what have been defined on the application side (specific pipeline parameters), move to the [demo application repository](https://github.com/dsanchor/demo-rest) and have a look at the [BuildConfig yaml file](https://github.com/dsanchor/demo-rest/blob/master/openshift/templates/bc-pipeline.yml). 
 
-## Commands summary
+## Summary
+
+### Configuration
+
+- Review maven repositories defined in [settings.xml](https://github.com/dsanchor/demo-cicd/blob/master/maven/settings.xml) 
+- Review parameters in [BuildConfig](https://github.com/dsanchor/demo-rest/blob/master/openshift/templates/bc-pipeline.yml) pipeline
+- Review [environment definitions](https://github.com/dsanchor/demo-rest/tree/master/openshift/tests/environments) for testing
+
+### Commands
 
 ```
 // login
