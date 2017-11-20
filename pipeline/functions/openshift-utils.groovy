@@ -24,7 +24,7 @@ def applyTemplate(project, templateFile, appName, appVersion, imageStreamProject
    echo "Applying template ${templateFile} in project ${project}. Application: ${appName}-${appVersion}"
    openshift.withProject( project ) {
       def models = null;
-      if (customParameters!=null) {
+      if (customParameters.startsWith("-p") {
 	 echo "Additional parameters for template are ${customParameters}"
          models = openshift.process( readFile(file:templateFile), "-p NAME=${appName}", "-p APP_VERSION=${appVersion}","-p IMAGESTREAM_PROJECT=${imageStreamProject}", "-p IMAGESTREAM_NAME=${imageStreamName}", customParameters ) 	      
       }	else {
