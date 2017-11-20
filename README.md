@@ -41,7 +41,7 @@ As shown in the previous diagram, the CI part of the pipeline is divided 3 main 
 - Push Artifact to Nexus
    - Version will be extracted from [pom.xml](https://github.com/dsanchor/demo-rest/blob/master/pom.xml)
    - Artifact will be uploaded to a release repository defined in pom.xml (distribution management) and store in Nexus. 
-     Notice that Nexus will reject uploading the same version twice. So it is important to **modify this version in the application pom.xml prior triggering this pipeline**. It is not the aim of this demo to define any strategy for version management or git branching, but a good and simple approach is "feature branching". In this case, you will create a "git branch" for every new feature (or hotfix) and you will merge it back to the master branch once it is finished. It is before merging when you could define a new version. Also, you have the possibility of using the well known maven release plugin to automate the version management and releases process. 
+     Notice that Nexus will reject uploading the same version twice. So it is important to **modify this version in the application pom.xml prior triggering this pipeline**. It is not the aim of this demo to define any strategy for version management or git branching, but a good and simple approach is "feature branching". In this case, you would create a "git branch" for every new feature (or hotfix) and you would merge it back to the master branch once you have finished the implementation and local testing. It is before merging when you could define a new version. Also, you have the possibility of using the well known maven release plugin to automate the version management and releases process. 
 
 This CI process will run on a Maven slave in Openshift. To set it in the pipeline, notice "node ("maven") { .... }". 
 
@@ -58,7 +58,7 @@ Main stages and actions performed during this CD process are:
 - On DEV environment
    - Initialization and build
       - Create DEV project based on given parameter name (ex: development, team-a-development...). In this document, it will be always referred as DEV. 
-      If the project already exists, "edit" role should be manually added to the jenkins ServiceAccount in order to give Jenkins the right privileges to trigger builds, deploys and create all necessary objects from the template. If that is your case, execute: oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n DEV
+        If the project already exists, "edit" role should be manually added to the jenkins ServiceAccount in order to give Jenkins the right privileges to trigger builds, deploys and create all necessary objects from the template. If that is your case, execute: oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n DEV
       - Create/Update all Openshift objects (ImageStream, DeploymentConfig, BuildConfig and so on) in DEV project as declared in the application template. For more details about which objects are going to be created, have a look at the [template](https://github.com/dsanchor/demo-rest/blob/master/openshift/templates/demo-rest-template.yml) I will use in this demo.
       - Build application image. It will get the application binaries from Nexus, create a new image and publish it in the internal registry
    - Deploy in DEV
@@ -72,7 +72,7 @@ Main stages and actions performed during this CD process are:
 - On TEST environment
    - Deploy in TEST
       - Create TEST project based on given parameter name (ex: test, team-a-test...). In this document, it will be always referred as TEST. 
-      If the project already exists, "edit" role should be manually added to the jenkins ServiceAccount in order to give Jenkins the right privileges to trigger deploys and create all necessary objects from the template. If that is your case, execute: oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n TEST
+        If the project already exists, "edit" role should be manually added to the jenkins ServiceAccount in order to give Jenkins the right privileges to trigger deploys and create all necessary objects from the template. If that is your case, execute: oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n TEST
       - Promote image. That is, tag image that has been created in DEV to a know tag that is used in TEST
       - Create/Update all Openshift objects in TEST project as declared in the application template, but in this case, neither BuildConfig and ImageStream is created, since the image has been created in DEV.
       - Deploy application
@@ -83,7 +83,7 @@ Main stages and actions performed during this CD process are:
 - On PROD environment
    - Blue/Green deployment in PROD
       - Create PROD project based on given parameter name (ex: production, team-a-production...). In this document, it will be always referred as PROD. 
-      If the project already exists, "edit" role should be manually added to the jenkins ServiceAccount in order to give Jenkins the right privileges to trigger deploys and create all necessary objects from the template. If that is your case, execute: oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n PROD
+        If the project already exists, "edit" role should be manually added to the jenkins ServiceAccount in order to give Jenkins the right privileges to trigger deploys and create all necessary objects from the template. If that is your case, execute: oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n PROD
       - Promote image. That is, tag image that has been created in DEV to a know tag that is used in PROD
       - Create/Update all Openshift objects in PROD project as declared in the application template, but in this case, neither BuildConfig and ImageStream is created, since the image has been created in DEV.
       - Blue/Green deployment in PROD. Just some percentage of the existing pods will be updated with new application version.
