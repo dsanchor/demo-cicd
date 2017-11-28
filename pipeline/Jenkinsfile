@@ -1,17 +1,12 @@
-node ("maven") {
+// load openshift-utils functions (using this path as convention.. define a env var if desired...)
+openshiftUtils = load "${WORKSPACE}/pipeline/functions/openshift-utils.groovy"
+// load groovy functions
+newman = load "${WORKSPACE}/pipeline/functions/newman.groovy"
 
-   echo "--------------------------"
-   sh "pwd"
-   echo "--------------------------"
-   sh "ls -lrt"
-   
-   // load openshift-utils functions (using this path as convention.. define a env var if desired...)
-   openshiftUtils = load "${WORKSPACE}/pipeline/functions/openshift-utils.groovy"
-   // load groovy functions
-   newman = load "${WORKSPACE}/pipeline/functions/newman.groovy"
-  
-   // define maven with custom settings.xml (using this path as convention.. define a env var if desired...)
-   def mvnCmd = "mvn -s ${WORKSPACE}/maven/settings.xml" 
+// define maven with custom settings.xml (using this path as convention.. define a env var if desired...)
+mvnCmd = "mvn -s ${WORKSPACE}/maven/settings.xml" 
+
+node ("maven") {
 
    stage("Maven build") {
 
