@@ -119,5 +119,14 @@ def filterDeploymentConfig(dc) {
    }
 }
 
+def addVersionLabels(objectType, appName, appVersion) {
+   def p = openshift.selector(objectType, appName).object()
+   def currentVersion = p.metadata.labels['current-version']
+   if (currentVersion!=null) {
+      p.metadata.labels['rollback-version']=currentVersion
+   }
+   p.metadata.labels['current-version']=appVersion
+   openshift.apply(p) 
+}
 
 return this
