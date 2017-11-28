@@ -71,7 +71,7 @@ node ("nodejs") {
 
          openshiftUtils.createProject(params.DEV_PROJECT, params.JENKINS_PROJECT, params.IMAGESTREAM_PROJECT)
          openshiftUtils.applyTemplate(params.DEV_PROJECT, "${params.APP_TEMPLATE}", params.APP_NAME,  APP_VERSION, params.IMAGESTREAM_PROJECT, params.APP_NAME, "${params.CUSTOM_TEMPLATE_PARAMETERS}" , [])
-         openshiftUtils.addVersionLabels("dc", params.APP_NAME, APP_VERSION)
+         openshiftUtils.addVersionLabels(params.DEV_PROJECT, "dc", params.APP_NAME, APP_VERSION)
 	 openshiftUtils.startBuildFromFile(params.DEV_PROJECT, params.APP_NAME, "${params.NEXUS_URL}${params.NEXUS_RELEASE_REPOSITORY}/${NEXUS_ARTIFACT_PATH}", true) 
       }
    }
@@ -104,7 +104,7 @@ node ("nodejs") {
          // tag image
          openshift.tag("${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${APP_VERSION}", "${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${params.TEST_TAG}")
          openshiftUtils.applyTemplate(params.TEST_PROJECT, "${params.APP_TEMPLATE}", params.APP_NAME,  params.TEST_TAG, params.IMAGESTREAM_PROJECT, params.APP_NAME, "${params.CUSTOM_TEMPLATE_PARAMETERS}", ["BuildConfig", "ImageStream"] )
-         openshiftUtils.addVersionLabels("dc", params.APP_NAME, APP_VERSION)
+         openshiftUtils.addVersionLabels(params.TEST_PROJECT, "dc", params.APP_NAME, APP_VERSION)
 	 openshiftUtils.deploy(params.TEST_PROJECT, params.APP_NAME)
       }
    }
@@ -142,7 +142,7 @@ node ("nodejs") {
             echo "First time deployment"
             // first time deployment
             openshiftUtils.applyTemplate(params.PROD_PROJECT, "${params.APP_TEMPLATE}", params.APP_NAME,  params.PROD_TAG, params.IMAGESTREAM_PROJECT, params.APP_NAME, "${params.CUSTOM_TEMPLATE_PARAMETERS}", ["BuildConfig", "ImageStream"] )
-            openshiftUtils.addVersionLabels("dc", params.APP_NAME, APP_VERSION)
+            openshiftUtils.addVersionLabels(params.PROD_PROJECT, "dc", params.APP_NAME, APP_VERSION)
 	    openshiftUtils.deploy(params.PROD_PROJECT, params.APP_NAME)
          }
       }
@@ -169,7 +169,7 @@ node ("nodejs") {
          if (redeploy) {
             echo "Executing full deployment"
             openshiftUtils.applyTemplate(params.PROD_PROJECT, "${params.APP_TEMPLATE}", "${params.APP_NAME}",  params.PROD_TAG, params.IMAGESTREAM_PROJECT, params.APP_NAME, "${params.CUSTOM_TEMPLATE_PARAMETERS}", ["BuildConfig", "ImageStream"] )
-            openshiftUtils.addVersionLabels("dc", params.APP_NAME, APP_VERSION)
+            openshiftUtils.addVersionLabels(params.PROD_PROJECT, "dc", params.APP_NAME, APP_VERSION)
 	    openshiftUtils.deploy(params.PROD_PROJECT, "${params.APP_NAME}")
             sh "oc project ${params.PROD_PROJECT}"
             sh "oc patch route/${params.APP_NAME} -p '{\"spec\": { \"alternateBackends\": [ ] } }'"
