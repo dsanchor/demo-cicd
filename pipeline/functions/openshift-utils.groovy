@@ -115,7 +115,7 @@ def filterDeploymentConfig(dc) {
    if (currentDc.exists()) {
       def currentDcObject = currentDc.object()
       // reset annotation kubectl.kubernetes.io/last-applied-configuration
-      openshift.annotate("dc", dc.metadata.name, "kubectl.kubernetes.io/last-applied-configuration", null)
+      sh "oc annotate dc ${dc.metadata.name} kubectl.kubernetes.io/last-applied-configuration-"
       // save current replica number
       echo "Keeping replica number to ${currentDcObject.spec.replicas}"
       dc.spec.replicas = currentDcObject.spec.replicas
