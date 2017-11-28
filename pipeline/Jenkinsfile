@@ -1,9 +1,9 @@
 node ("maven") {
 
    // load openshift-utils functions (using this path as convention.. define a env var if desired...)
-   openshiftUtils = load 'pipeline/functions/openshift-utils.groovy'
+   openshiftUtils = load '${WORKSPACE}/pipeline/functions/openshift-utils.groovy'
    // load groovy functions
-   newman = load 'pipeline/functions/newman.groovy'
+   newman = load '${WORKSPACE}/pipeline/functions/newman.groovy'
   
    // define maven with custom settings.xml (using this path as convention.. define a env var if desired...)
    def mvnCmd = "mvn -s ${WORKSPACE}/maven/settings.xml" 
