@@ -43,7 +43,7 @@ def applyTemplate(project, templateFile, appName, appVersion, imageStreamProject
          if (!skip) {
             echo "Applying changes on ${o.kind}"
             filterObject(o)
-            def created = openshift.apply(o) 
+            def created = openshift.apply(o, "--overwrite") 
            // do we want to show "created"?
          }
       }
