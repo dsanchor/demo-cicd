@@ -42,7 +42,7 @@ def applyTemplate(project, templateFile, appName, appVersion, imageStreamProject
          }
          if (!skip) {
             echo "Applying changes on ${o.kind}"
-            filterObject(o)
+            filterObject(o, project)
             def created = openshift.apply(o) 
            // do we want to show "created"?
          }
@@ -101,21 +101,21 @@ def deploy(project, appName) {
 }
 
 
-def filterObject(object) {
+def filterObject(object, project) {
    // TODO extend with any possible rule for any object you want
    if ( object.kind == "DeploymentConfig" ) {
-      filterDeploymentConfig(object)	   
+      filterDeploymentConfig(object, project)	   
    }
 }
 
 
-def filterDeploymentConfig(dc) {
+def filterDeploymentConfig(dc, project) {
    echo "Filtering DeploymentConfig ${dc.metadata.name}"
    def currentDc = openshift.selector("dc", dc.metadata.name)
    if (currentDc.exists()) {
       def currentDcObject = currentDc.object()
       // reset annotation kubectl.kubernetes.io/last-applied-configuration
-      sh "oc project ${dc.metadata.namespace}"
+      sh "oc project ${project}"
       sh "oc annotate dc ${dc.metadata.name} kubectl.kubernetes.io/last-applied-configuration-"
       // save current replica number
       echo "Keeping replica number to ${currentDcObject.spec.replicas}"
