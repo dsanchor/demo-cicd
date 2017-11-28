@@ -26,9 +26,9 @@ def applyTemplate(project, templateFile, appName, appVersion, imageStreamProject
       def models = null;
       if (customParameters.startsWith("-p")) {
 	 echo "Additional parameters for template are ${customParameters}"
-         models = openshift.process( readFile(file:templateFile), "-p NAME=${appName}", "-p APP_VERSION=${appVersion}","-p IMAGESTREAM_PROJECT=${imageStreamProject}", "-p IMAGESTREAM_NAME=${imageStreamName}", customParameters ) 	      
+         models = openshift.process( readFile(file:templateFile), "-p NAME=${appName}", "-p APP_VERSION=${appVersion}","-p IMAGESTREAM_PROJECT=${imageStreamProject}", "-p IMAGESTREAM_NAME=${imageStreamName}", "-p IMAGESTREAM_TAG=${appVersion}", customParameters ) 	      
       }	else {
-         models = openshift.process( readFile(file:templateFile), "-p NAME=${appName}", "-p APP_VERSION=${appVersion}","-p IMAGESTREAM_PROJECT=${imageStreamProject}", "-p IMAGESTREAM_NAME=${imageStreamName}", "" ) 	               
+         models = openshift.process( readFile(file:templateFile), "-p NAME=${appName}", "-p APP_VERSION=${appVersion}","-p IMAGESTREAM_PROJECT=${imageStreamProject}", "-p IMAGESTREAM_NAME=${imageStreamName}", "-p IMAGESTREAM_TAG=${appVersion}", "" ) 	               
       }
       echo "Discarding objects of type ${skipObjects}"
       for ( o in models ) {
