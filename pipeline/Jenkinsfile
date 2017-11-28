@@ -157,11 +157,43 @@ node ("nodejs") {
       
    }
 
-   stage('Approval required') {
+//   stage('Approval required') {
       // TODO send notification
-      input "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME} version ${APP_VERSION}? "
+//      input "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME} version ${APP_VERSION}? "
+//   }
+	
+   stage('Approval required') {
+      	   // TODO send notification
+	   def deployAndRollback = false
+	   def currentVersion = APP_VERSION
+	   def previousVersion = null
+	   def p = openshift.selector("dc", params.APP_NAME)
+	   if (p.exists()) {
+	      def object = p.object()
+	      currentVersion = object.metadata.labels[appName+'-current-version']
+	      previousVersion = object.metadata.labels[appName+'-previous-version']
+	      if (currentVersion!=null) {
+		 if (previousVersion!=null && currentVersion!=previousVersion) {
+		    deployAndRollback = true   
+		 }
+	      }
+	   }
+	   if (deployAndRollback) {
+		   def deployChoice = "Deploy"
+		   def rollbackChoice = "Rollback"
+		   def version = input message: "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME}. Do you want to deploy new version ${currentVersion} or rollback to version ${previousVersion}?", 
+			   parameters: [choice(name: 'Version', choices: "${deployChoice}\n${rollbackChoice}")]
+		   if (version == rollbackChoice) {
+			openshift.tag("${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${previousVersion}", "${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${params.PROD_TAG}")
+		        echo "Rollback application ${params.APP_NAME} to version ${previousVersion}"
+			p.object().metadata.labels[appName+'-current-version'] = previousVersion
+			openshift.apply(p.object())
+		   }
+	   } else {
+		 input "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME} version ${currentVersion}? "
+	   }
    }
-
+	
    stage("Full deploy in *${params.PROD_PROJECT}*") {
       
       openshift.withCluster() { 
