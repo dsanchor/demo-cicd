@@ -1,0 +1,76 @@
+node ("nodejs") {
+
+   // download and configure all common cicd stuff		 
+   dir('cicd') {		
+      // download all cicd required files		
+      git "${params.CICD_GIT_URL}"		
+      // load openshift-utils functions (using this path as convention.. define a env var if desired...)		
+      openshiftUtils = load 'pipeline/functions/openshift-utils.groovy'		
+      // load groovy functions		
+      newman = load 'pipeline/functions/newman.groovy'		
+		
+   }  	
+   
+   stage('Rollback approval') {
+
+      echo "Rolling back application ${params.APP_NAME}"
+      
+      project = input message: "Please, select the project where the application ${params.APP_NAME} has to be rolled back", 
+			   parameters: [choice(name: 'Project', choices: "${params.TEST_PROJECT}\n${params.PROD_PROJECT}")]
+  }
+
+  stage('Perform application rollback') {
+
+      openshift.withProject(project) {
+      
+	       def p = openshift.selector("dc", params.APP_NAME)
+         def fail = true
+	       if (p!=null && p.exists()) {
+         
+	          def currentVersion = p.object().metadata.labels[params.APP_NAME+'-current-version']
+            echo "Current version is ${currentVersion}"
+            def rollbackVersion = p.object().metadata.labels[params.APP_NAME+'-rollback-version']
+            echo "Rollback version is ${rollbackVersion}"
+            
+	          if (currentVersion!=null) {
+		            if (rollbackVersion!=null) {
+		                if (currentVersion!=rollbackVersion) {
+                    
+                       def dcObject = p.object()
+                       // get tag used by the application (it is stored under version label) 
+                       def tag = dcObject.metadata.labels['version']
+                       openshift.tag("${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${rollbackVersion}", "${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${tag}")
+                       dcObject.metadata.labels[params.APP_NAME+'-current-version'] = rollbackVersion
+                       dcObject.metadata.labels[params.APP_NAME+'-rollback-version'] = rollbackVersion
+                       openshift.apply(dcObject)
+ 	                     openshiftUtils.deploy(params.PROD_PROJECT, "${params.APP_NAME}")
+                       fail = false
+                       
+                    } else {
+                       echo "Rollback could not be performed. Current and rollback labels are the same"
+                    }	
+                 } else {
+                    echo "Rollback could not be performed. DeploymentConfig for application ${params.APP_NAME} is missing labels ${params.APP_NAME}-rollback-version"
+                 }
+	           } else {
+                 echo "Rollback could not be performed. DeploymentConfig for application ${params.APP_NAME} is missing labels ${params.APP_NAME}-current-version"
+             }
+	        } else {
+              echo "Application ${params.APP_NAME} does not exist in project ${project}"
+          }
+          if (fail) {
+              currentBuild.result = 'FAILURE'
+              error('Some preconditions failed. Check log for more information')
+          }
+      }
+   }
+	
+   stage("Integration tests") {
+      if (project == params.TEST_PROJECT) {
+         newman.runTest(params.POSTMAN_TESTS_COLLECTION, params.POSTMAN_PROD_ENVIRONMENT_CONFIG)
+      } else if (project == params.PROD_PROJECT){
+         newman.runTest(params.POSTMAN_TESTS_COLLECTION, params.POSTMAN_TEST_ENVIRONMENT_CONFIG)
+      }
+   }
+
+}
