@@ -164,11 +164,12 @@ node ("nodejs") {
 	
    stage('Approval required') {
       	   // TODO send notification
+      openshift.withProject(params.PROD_PROJECT) {
 	   def deployAndRollback = false
 	   def currentVersion = APP_VERSION
 	   def previousVersion = null
 	   def p = openshift.selector("dc", params.APP_NAME)
-	   if (p.exists()) {
+	   if (p!=null && p.exists()) {
 	      def object = p.object()
 	      currentVersion = object.metadata.labels[appName+'-current-version']
 	      previousVersion = object.metadata.labels[appName+'-previous-version']
@@ -192,6 +193,7 @@ node ("nodejs") {
 	   } else {
 		 input "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME} version ${currentVersion}? "
 	   }
+      }
    }
 	
    stage("Full deploy in *${params.PROD_PROJECT}*") {
