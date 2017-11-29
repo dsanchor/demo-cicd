@@ -170,14 +170,11 @@ node ("nodejs") {
 	   def currentVersion = null
 	   def p = openshift.selector("dc", params.APP_NAME)
 	   if (p!=null && p.exists()) {
-	      def object = p.object()
-	      currentVersion = object.metadata.labels[params.APP_NAME+'-current-version']
+	      currentVersion = p.object().metadata.labels[params.APP_NAME+'-current-version']
               echo "Current version is ${currentVersion}"
               echo "New version is ${APP_VERSION}"
-	      if (currentVersion!=null) {
-		 if (currentVersion!=null && currentVersion!=APP_VERSION) {
+	      if (currentVersion!=null && currentVersion!=APP_VERSION) {
 		    deployAndRollback = true   
-		 }
 	      }
 	   }
 	   echo "DeployAndRollback is ${deployAndRollback}"
