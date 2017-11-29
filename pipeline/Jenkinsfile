@@ -167,17 +167,14 @@ node ("nodejs") {
       	   // TODO send notification
       openshift.withProject(params.PROD_PROJECT) {
 	   def deployAndRollback = false
-	   def currentVersion = APP_VERSION
-	   def previousVersion = null
 	   def p = openshift.selector("dc", params.APP_NAME)
 	   if (p!=null && p.exists()) {
 	      def object = p.object()
-	      currentVersion = object.metadata.labels[params.APP_NAME+'-current-version']
+	      def currentVersion = object.metadata.labels[params.APP_NAME+'-current-version']
               echo "Current version is ${currentVersion}"
-	      previousVersion = object.metadata.labels[params.APP_NAME+'-rollback-version']
-	      echo "Previous version was ${previousVersion}"
+              echo "New version is ${APP_VERSION}"
 	      if (currentVersion!=null) {
-		 if (previousVersion!=null && currentVersion!=previousVersion) {
+		 if (currentVersion!=null && currentVersion!=APP_VERSION) {
 		    deployAndRollback = true   
 		 }
 	      }
@@ -186,13 +183,13 @@ node ("nodejs") {
 	   if (deployAndRollback) {
 		   def deployChoice = "Deploy"
 		   def rollbackChoice = "Rollback"
-		   def choice = input message: "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME}. Do you want to deploy new version ${APP_VERSION} or rollback to version ${previousVersion}?", 
+		   def choice = input message: "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME}. Do you want to deploy new version ${APP_VERSION} or rollback to version ${currentVersion}?", 
 			   parameters: [choice(name: 'Version', choices: "${deployChoice}\n${rollbackChoice}")]
 		   if (choice == rollbackChoice) {
-			openshift.tag("${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${previousVersion}", "${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${params.PROD_TAG}")
-		        echo "Rollback application ${params.APP_NAME} to version ${previousVersion}"
+			openshift.tag("${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${currentVersion}", "${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${params.PROD_TAG}")
+		        echo "Rollback application ${params.APP_NAME} to version ${currentVersion}"
 			// modify APP_VERSION to the rollback version
-			APP_VERSION = previousVersion
+			APP_VERSION = currentVersion
 		   }
 	   } else {
 		 input "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME} version ${APP_VERSION}? "
