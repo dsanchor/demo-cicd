@@ -184,4 +184,17 @@ def rollback(project, appName, imageStreamProject) {
     return succeeded
 }
 
+def addAlternateService(project, appName, alternateServiceName, weight) {
+    sh "oc project ${project}"
+    sh "oc patch route/${appName} -p '{\"spec\": { \"alternateBackends\": [ { \"kind\": \"Service\", \"name\": \"${alternateServiceName}\", \"weight\": ${weight} } ] } }'"
+}
+
+def resetAlternateService(project, appName) {
+    sh "oc project ${project}"
+    sh "oc patch route/${appName} -p '{\"spec\": { \"alternateBackends\": [ ] } }'"
+}
+
+
+
+
 return this
