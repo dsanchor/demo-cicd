@@ -86,16 +86,11 @@ node("nodejs") {
         }
     }
 
-    //stage("Integration tests in *${params.DEV_PROJECT}*") {
+    stage("Integration tests in *${params.DEV_PROJECT}*") {
 
-    //    newman.runTest(params.POSTMAN_TESTS_COLLECTION, params.POSTMAN_DEV_ENVIRONMENT_CONFIG)
+        newman.runTest(params.POSTMAN_TESTS_COLLECTION, params.POSTMAN_DEV_ENVIRONMENT_CONFIG)
 
-    //}
-
-    //stage('Approval required') {
-    // TODO send notification
-    //   input "Ready to update ${params.TEST_PROJECT} project with application ${params.APP_NAME} version ${APP_VERSION}?"
-    //}
+    }
 
     stage("Deploy in *${params.TEST_PROJECT}*") {
 
@@ -110,11 +105,11 @@ node("nodejs") {
         }
     }
 
-    //stage("Integration tests in *${params.TEST_PROJECT}*") {
+    stage("Integration tests in *${params.TEST_PROJECT}*") {
 
-    //    newman.runTest(params.POSTMAN_TESTS_COLLECTION, params.POSTMAN_TEST_ENVIRONMENT_CONFIG)
+        newman.runTest(params.POSTMAN_TESTS_COLLECTION, params.POSTMAN_TEST_ENVIRONMENT_CONFIG)
 
-    //}
+    }
 
     stage('Approval required') {
         // TODO send notification
