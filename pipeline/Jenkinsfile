@@ -224,9 +224,17 @@ node("nodejs") {
     }
 
     stage("Integration tests in *${params.PROD_PROJECT}*") {
-
-        newman.runTest(params.POSTMAN_TESTS_COLLECTION, params.POSTMAN_PROD_ENVIRONMENT_CONFIG)
-
+        try {
+            newman.runTest(params.POSTMAN_TESTS_COLLECTION, params.POSTMAN_PROD_ENVIRONMENT_CONFIG)
+        } catch (Exception e) {
+            def succeeded = openshiftUtils.rollback(project, params.APP_NAME, params.IMAGESTREAM_PROJECT)
+            if (succeeded) {
+                error('Integration tests in project ${params.PROD_PROJECT} failed. Automatic rollback has been performed. Check tests output in log for more details')
+            } else {
+                error('Integration tests in project ${params.PROD_PROJECT} failed but automatic rollback could not be performed. Check log for more details')
+            }
+            currentBuild.result = 'FAILURE'
+        }
     }
 
 }
