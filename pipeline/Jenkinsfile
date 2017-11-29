@@ -186,7 +186,7 @@ node ("nodejs") {
 	   if (deployAndRollback) {
 		   def deployChoice = "Deploy"
 		   def rollbackChoice = "Rollback"
-		   def choice = input message: "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME}. Do you want to deploy new version ${currentVersion} or rollback to version ${previousVersion}?", 
+		   def choice = input message: "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME}. Do you want to deploy new version ${APP_VERSION} or rollback to version ${previousVersion}?", 
 			   parameters: [choice(name: 'Version', choices: "${deployChoice}\n${rollbackChoice}")]
 		   if (choice == rollbackChoice) {
 			openshift.tag("${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${previousVersion}", "${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${params.PROD_TAG}")
@@ -195,7 +195,7 @@ node ("nodejs") {
 			APP_VERSION = previousVersion
 		   }
 	   } else {
-		 input "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME} version ${currentVersion}? "
+		 input "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME} version ${APP_VERSION}? "
 	   }
       }
    }
