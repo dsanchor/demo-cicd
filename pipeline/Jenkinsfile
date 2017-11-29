@@ -171,8 +171,8 @@ node ("nodejs") {
 	   def p = openshift.selector("dc", params.APP_NAME)
 	   if (p!=null && p.exists()) {
 	      def object = p.object()
-	      currentVersion = object.metadata.labels[appName+'-current-version']
-	      previousVersion = object.metadata.labels[appName+'-previous-version']
+	      currentVersion = object.metadata.labels[params.APP_NAME+'-current-version']
+	      previousVersion = object.metadata.labels[params.APP_NAME+'-previous-version']
 	      if (currentVersion!=null) {
 		 if (previousVersion!=null && currentVersion!=previousVersion) {
 		    deployAndRollback = true   
@@ -187,7 +187,7 @@ node ("nodejs") {
 		   if (version == rollbackChoice) {
 			openshift.tag("${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${previousVersion}", "${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${params.PROD_TAG}")
 		        echo "Rollback application ${params.APP_NAME} to version ${previousVersion}"
-			p.object().metadata.labels[appName+'-current-version'] = previousVersion
+			p.object().metadata.labels[params.APP_NAME+'-current-version'] = previousVersion
 			openshift.apply(p.object())
 		   }
 	   } else {
