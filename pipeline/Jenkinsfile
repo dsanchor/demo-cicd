@@ -49,6 +49,7 @@ node ("maven") {
          sh "${mvnCmd} deploy -Dnexus.url=${params.NEXUS_URL}"
          // extract info from pom.xml to build NEXUS_ARTIFACT_PATH
          def pom = readMavenPom file: "pom.xml"
+	 // global variable
          APP_VERSION = pom.version
          def artifactId = pom.artifactId
          def groupId = pom.groupId.replace(".","/")
@@ -132,8 +133,6 @@ node ("nodejs") {
          }
          if (redeploy) {
             echo "Executing Blue/Green deployment"
-	    // update labels in old deployment
-	    openshiftUtils.addVersionLabels(params.PROD_PROJECT, "dc", params.APP_NAME, APP_VERSION)
             // create alternate deployment with new version
             openshiftUtils.applyTemplate(params.PROD_PROJECT, "${params.APP_TEMPLATE}", "${params.APP_NAME}-alternate",  params.PROD_TAG, params.IMAGESTREAM_PROJECT, params.APP_NAME, "${params.CUSTOM_TEMPLATE_PARAMETERS}", ["BuildConfig", "ImageStream"] )
             openshiftUtils.deploy(params.PROD_PROJECT, "${params.APP_NAME}-alternate")
@@ -187,13 +186,13 @@ node ("nodejs") {
 	   if (deployAndRollback) {
 		   def deployChoice = "Deploy"
 		   def rollbackChoice = "Rollback"
-		   def version = input message: "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME}. Do you want to deploy new version ${currentVersion} or rollback to version ${previousVersion}?", 
+		   def choice = input message: "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME}. Do you want to deploy new version ${currentVersion} or rollback to version ${previousVersion}?", 
 			   parameters: [choice(name: 'Version', choices: "${deployChoice}\n${rollbackChoice}")]
-		   if (version == rollbackChoice) {
+		   if (choice == rollbackChoice) {
 			openshift.tag("${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${previousVersion}", "${params.IMAGESTREAM_PROJECT}/${params.APP_NAME}:${params.PROD_TAG}")
 		        echo "Rollback application ${params.APP_NAME} to version ${previousVersion}"
-			p.object().metadata.labels[params.APP_NAME+'-current-version'] = previousVersion
-			openshift.apply(p.object())
+			// modify APP_VERSION to the rollback version
+			APP_VERSION = previousVersion
 		   }
 	   } else {
 		 input "Full deployment: Ready to update ${params.PROD_PROJECT} project with application ${params.APP_NAME} version ${currentVersion}? "
@@ -208,6 +207,7 @@ node ("nodejs") {
          if (redeploy) {
             echo "Executing full deployment"
             openshiftUtils.applyTemplate(params.PROD_PROJECT, "${params.APP_TEMPLATE}", "${params.APP_NAME}",  params.PROD_TAG, params.IMAGESTREAM_PROJECT, params.APP_NAME, "${params.CUSTOM_TEMPLATE_PARAMETERS}", ["BuildConfig", "ImageStream"] )
+	    openshiftUtils.addVersionLabels(params.PROD_PROJECT, "dc", params.APP_NAME, APP_VERSION)
 	    openshiftUtils.deploy(params.PROD_PROJECT, "${params.APP_NAME}")
             sh "oc project ${params.PROD_PROJECT}"
             sh "oc patch route/${params.APP_NAME} -p '{\"spec\": { \"alternateBackends\": [ ] } }'"
