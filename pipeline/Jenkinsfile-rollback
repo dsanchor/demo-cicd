@@ -15,7 +15,7 @@ node("nodejs") {
 
         echo "Rolling back application ${params.APP_NAME}"
 
-        project = input message: "Please, select the project where the application ${params.APP_NAME} has to be rolled back",
+        project = input message: "Application ${params.APP_NAME} will be rolled back. Please, choose target project",
             parameters: [choice(name: 'Project', choices: "${params.TEST_PROJECT}\n${params.PROD_PROJECT}")]
     }
 
