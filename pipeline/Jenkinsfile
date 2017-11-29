@@ -172,13 +172,18 @@ node ("nodejs") {
 	   if (p!=null && p.exists()) {
 	      def object = p.object()
 	      currentVersion = object.metadata.labels[params.APP_NAME+'-current-version']
+              echo "Current version is ${currentVersion}"
 	      previousVersion = object.metadata.labels[params.APP_NAME+'-previous-version']
+	      echo "Previous version was ${previousVersion}"
 	      if (currentVersion!=null) {
+		 echo "REMOVEME: current"
 		 if (previousVersion!=null && currentVersion!=previousVersion) {
+		    echo "REMOVEME: rollback"
 		    deployAndRollback = true   
 		 }
 	      }
 	   }
+	   echo "DeployAndRollback is ${deployAndRollback}"
 	   if (deployAndRollback) {
 		   def deployChoice = "Deploy"
 		   def rollbackChoice = "Rollback"
