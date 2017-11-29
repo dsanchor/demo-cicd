@@ -167,6 +167,7 @@ node ("nodejs") {
       	   // TODO send notification
       openshift.withProject(params.PROD_PROJECT) {
 	   def deployAndRollback = false
+	   def currentVersion = null
 	   def p = openshift.selector("dc", params.APP_NAME)
 	   if (p!=null && p.exists()) {
 	      def object = p.object()
