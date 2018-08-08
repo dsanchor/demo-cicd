@@ -1,3 +1,5 @@
+properties([pipelineTriggers([pollSCM('')])])
+
 node("maven") {
 
     // download and configure all common cicd stuff		 
